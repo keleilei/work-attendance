@@ -7,10 +7,9 @@ import javax.ws.rs.ApplicationPath;
 /**
  * Created by kelei on 2016/9/7.
  */
-@ApplicationPath("/")
+@ApplicationPath("/rest/*")
 public class RESTConfig extends ResourceConfig {
 
     public RESTConfig(){
-
     }
 }
