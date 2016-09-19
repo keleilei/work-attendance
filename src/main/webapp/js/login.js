@@ -6,11 +6,14 @@ $(function(){
         console.log(formData);
         $(".ui.dimmer").dimmer({closable: false}).dimmer("show");
         $.ajax({
-            url : "/rest/login/validate",
+            url : "rest/login/validate",
             data : formData,
+            method : "post",
             dataType : "json"
         }).done(function (data) {
             console.log(data);
+        }).fail(function () {
+            $(".ui.dimmer").dimmer("hide");
         });
     });
 });
