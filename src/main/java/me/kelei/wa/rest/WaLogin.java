@@ -1,5 +1,6 @@
 package me.kelei.wa.rest;
 
+import me.kelei.wa.entities.WaUser;
 import me.kelei.wa.services.IJYWaDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,10 +20,14 @@ public class WaLogin {
     @POST
     @Path("validate")
     @Produces(MediaType.APPLICATION_JSON)
-    public String validateUser(@FormParam("waname") String userName, @FormParam("wapwd")String password,
+    public String validateUser(@FormParam("wapid") String pid, @FormParam("wapwd")String password,
                                @FormParam("rememberme") String rememberMe){
-        boolean isSuccess = ijyWaDataService.login(userName, password);
-        return "{\"isValidate\" : false}";
+        WaUser waUser = ijyWaDataService.login(pid, password);
+        boolean isValidate = false;
+        if(waUser != null){
+            isValidate = true;
+        }
+        return "{\"isValidate\" : "+isValidate+"}";
     }
 
 }

@@ -1,5 +1,7 @@
 package me.kelei.wa.services;
 
+import me.kelei.wa.entities.WaUser;
+
 /**
  * 从精友考勤系统获取数据
  * Created by kelei on 2016/9/20.
@@ -12,5 +14,5 @@ public interface IJYWaDataService {
      * @param password
      * @return
      */
-    boolean login(String userName, String password);
+    WaUser login(String userName, String password);
 }
