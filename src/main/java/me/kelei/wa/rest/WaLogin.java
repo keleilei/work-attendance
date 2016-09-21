@@ -22,8 +22,7 @@ public class WaLogin {
     public String validateUser(@FormParam("waname") String userName, @FormParam("wapwd")String password,
                                @FormParam("rememberme") String rememberMe){
         boolean isSuccess = ijyWaDataService.login(userName, password);
-        System.out.println(isSuccess);
-        return "{\"isValidate\" : true}";
+        return "{\"isValidate\" : false}";
     }
 
 }

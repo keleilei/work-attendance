@@ -12,6 +12,10 @@ $(function(){
             dataType : "json"
         }).done(function (data) {
             console.log(data);
+            if(data.isValidate){
+
+            }else
+                $(".ui.dimmer").dimmer("hide");
         }).fail(function () {
             $(".ui.dimmer").dimmer("hide");
         });
