@@ -6,3 +6,15 @@
     width: 400px;
     margin: 0 auto;
 }
+
+.walogin .ui.message{
+    padding: 0.5em 1em !important;
+}
+
+.walogin .ui.message .icon{
+    font-size: 2em !important;
+}
+
+.walogin .ui.message p{
+    font-size: 13px;
+}

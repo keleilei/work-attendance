@@ -4,16 +4,12 @@
 <!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"-->
 <!--xsi:schemaLocation="http://java.sun.com/xml/ns/javaee-->
 <!--http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" metadata-complete="false">-->
-<web-app version="2.5"
+<web-app version="3.0"
          xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+	http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
 
-    <welcome-file-list>
-        <welcome-file>/page/login.html</welcome-file>
-    </welcome-file-list>
-    
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
@@ -22,7 +18,16 @@
         <param-name>contextConfigLocation</param-name>
         <param-value>classpath:applicationContext.xml</param-value>
     </context-param>
-    
+
+    <filter>
+        <filter-name>LoginFilter</filter-name>
+        <filter-class>me.kelei.wa.filters.LoginFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>LoginFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <servlet>
         <servlet-name>JerseyServlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -37,4 +42,7 @@
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
 
+    <welcome-file-list>
+        <welcome-file>/page/index.html</welcome-file>
+    </welcome-file-list>
 </web-app>
