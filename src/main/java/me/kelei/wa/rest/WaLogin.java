@@ -4,7 +4,9 @@ import me.kelei.wa.entities.WaUser;
 import me.kelei.wa.services.IJYWaDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -17,6 +19,9 @@ public class WaLogin {
     @Autowired
     private IJYWaDataService ijyWaDataService;
 
+    @Context
+    private HttpServletRequest request;
+
     @POST
     @Path("validate")
     @Produces(MediaType.APPLICATION_JSON)
@@ -26,6 +31,7 @@ public class WaLogin {
         boolean isValidate = false;
         if(waUser != null){
             isValidate = true;
+            request.getSession().setAttribute("waUser", waUser);
         }
         return "{\"isValidate\" : "+isValidate+"}";
     }

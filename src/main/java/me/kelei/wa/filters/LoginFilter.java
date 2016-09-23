@@ -23,23 +23,35 @@ public class LoginFilter implements Filter {
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse)servletResponse;
         HttpSession session = request.getSession();
-        Pattern pattern = Pattern.compile(regPath);
-        Object user = session.getAttribute("waUser");
-        Cookie[] cookies = request.getCookies();
-        String rememberme = null;
-        if(!pattern.matcher(request.getRequestURI()).find()){
-            if(cookies != null && cookies.length > 0){
-                for(Cookie cookie : cookies)
-                    if("rememberme".equals(cookie.getName()))
-                        rememberme = cookie.getValue();
-            }
 
-            if(user == null || !"on".equals(rememberme)){
-                request.getRequestDispatcher("/page/login.html").forward(request, response);
-                return;
+        Object user = session.getAttribute("waUser");
+        Pattern pattern = Pattern.compile(regPath);
+
+        if(!pattern.matcher(request.getRequestURI()).find()){
+            if(user == null){
+                Cookie[] cookies = request.getCookies();
+                String rememberme = null;
+                String wapid = null;
+                if(cookies != null && cookies.length > 0){
+                    for(Cookie cookie : cookies){
+                        if("wapid".equals(cookie.getName()))
+                            wapid = cookie.getValue();
+                        if("rememberme".equals(cookie.getName()))
+                            rememberme = cookie.getValue();
+                    }
+
+                }
+
+                if("on".equals(rememberme)){
+
+                }else{
+                    request.getRequestDispatcher("/page/login.html").forward(request, response);
+                    return;
+                }
             }
         }
 
