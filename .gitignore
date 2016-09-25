@@ -1,4 +1,5 @@
 *.class
+classes
 target
 
 # Mobile Tools for Java (J2ME)
@@ -15,5 +16,4 @@ hs_err_pid*
 # Intellij idea
 .idea/
 *.iml
-classes/
 out

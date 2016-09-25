@@ -1,51 +1,51 @@
 package me.kelei.wa.entities;
 
 /**
- * 用户实体
+ * 考勤用户
  * Created by kelei on 2016/9/21.
  */
 public class WaUser {
     //姓名
-    private String userName;
+    private String waUserName;
 
     //密码
-    private String userPwd;
+    private String waUserPwd;
 
     //员工唯一码
-    private String uid;
+    private String waUid;
 
     //考勤号
-    private String pid;
+    private String waPid;
 
-    public String getUserName() {
-        return userName;
+    public String getWaUserName() {
+        return waUserName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setWaUserName(String waUserName) {
+        this.waUserName = waUserName;
     }
 
-    public String getUserPwd() {
-        return userPwd;
+    public String getWaUserPwd() {
+        return waUserPwd;
     }
 
-    public void setUserPwd(String userPwd) {
-        this.userPwd = userPwd;
+    public void setWaUserPwd(String waUserPwd) {
+        this.waUserPwd = waUserPwd;
     }
 
-    public String getUid() {
-        return uid;
+    public String getWaUid() {
+        return waUid;
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
+    public void setWaUid(String waUid) {
+        this.waUid = waUid;
     }
 
-    public String getPid() {
-        return pid;
+    public String getWaPid() {
+        return waPid;
     }
 
-    public void setPid(String pid) {
-        this.pid = pid;
+    public void setWaPid(String waPid) {
+        this.waPid = waPid;
     }
 }

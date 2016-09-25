@@ -1,7 +1,7 @@
 package me.kelei.wa.rest;
 
 import me.kelei.wa.entities.WaUser;
-import me.kelei.wa.services.IJYWaDataService;
+import me.kelei.wa.services.IWaService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 public class WaLogin {
 
     @Autowired
-    private IJYWaDataService ijyWaDataService;
+    private IWaService ijyWaDataService;
 
     @Context
     private HttpServletRequest request;
