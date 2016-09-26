@@ -12,9 +12,7 @@ public class FastJson2JsonRedisSerializer <T> implements RedisSerializer<T> {
 
     private Class<T> clazz;
 
-    public FastJson2JsonRedisSerializer(){
-
-    }
+    public FastJson2JsonRedisSerializer(){}
 
     public FastJson2JsonRedisSerializer(Class<T> clazz){
         this.clazz = clazz;

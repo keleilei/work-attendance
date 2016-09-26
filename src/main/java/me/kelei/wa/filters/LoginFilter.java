@@ -1,5 +1,6 @@
 package me.kelei.wa.filters;
 
+import me.kelei.wa.utils.JYWaUtil;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.*;
@@ -47,7 +48,8 @@ public class LoginFilter implements Filter {
                 }
 
                 if("on".equals(rememberme)){
-
+                    request.setAttribute("wapid",wapid);
+                    request.getRequestDispatcher("/rest/login/rememberMe").forward(request, response);
                 }else{
                     request.getRequestDispatcher("/page/login.html").forward(request, response);
                     return;

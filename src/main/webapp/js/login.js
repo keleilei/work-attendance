@@ -20,6 +20,7 @@ $(function(){
             console.log(data);
             if(data.isValidate){
                 addAutoLogin();
+                window.location.reload();
             }else{
                 removeAutoLogin();
                 tada(LOGIN_MESSAGE_USER_ERROR);

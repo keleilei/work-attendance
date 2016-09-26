@@ -96,7 +96,7 @@ public class JYWaUtil {
      * @param startDate
      * @return
      */
-    public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate){
+    public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate, Date endDate){
         List<WaRecord> recordList = new ArrayList<>();
         HttpClient client = jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd());
         List<Cookie> cookies =httpCookieStore.getCookies();
@@ -110,7 +110,7 @@ public class JYWaUtil {
             int pageNum = 1;
             int pageCount;
             do{
-                pageCount = getRecordByPage(waUser.getWaUid(), cookieName, cookieValue, pageNum, startDate, recordList);
+                pageCount = getRecordByPage(waUser.getWaUid(), cookieName, cookieValue, pageNum, startDate, endDate, recordList);
                 pageNum++;
             }while (pageNum <= pageCount);
         }catch (Exception e){
@@ -131,9 +131,9 @@ public class JYWaUtil {
      * @throws IOException
      */
     private static int getRecordByPage(String uid, String cookieName, String cookieValue, int pn, Date startDate,
-                                       List<WaRecord> recordList) throws IOException {
+                                       Date endDate, List<WaRecord> recordList) throws IOException {
         String fromDate = DateFormatUtils.format(startDate, "yyyy-MM-dd");
-        String toDate = DateFormatUtils.format(new Date(), "yyyy-MM-dd");
+        String toDate = DateFormatUtils.format(endDate, "yyyy-MM-dd");
         String kgUrl = "http://124.42.1.13:8000/iclock/staff/transaction/?p=" + pn +
                 "&t=staff_transaction.html&UserID__id__exact=" + uid +"&fromTime=" + fromDate + "&toTime=" + toDate;
         Document document = Jsoup.connect(kgUrl).cookie(cookieName, cookieValue).get();
@@ -187,13 +187,5 @@ public class JYWaUtil {
             logger.error("登录精友考勤网站失败！", e);
         }
         return client;
-    }
-
-    public static void main(String[] args) throws ParseException {
-        WaUser user = new WaUser();
-        user.setWaPid("1098");
-        user.setWaUid("291");
-        user.setWaUserPwd("ketingjiang");
-        JYWaUtil.getJYWaRecordList(user, DateUtils.parseDate("2016-08-01","yyyy-MM-dd"));
     }
 }

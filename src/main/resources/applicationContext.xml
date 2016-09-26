@@ -34,7 +34,7 @@
     </bean>
 
     <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
-          p:connection-factory-ref="jedisConnFactory">
+          p:connectionFactory-ref="jedisConnFactory">
         <property name="keySerializer">
             <bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
         </property>

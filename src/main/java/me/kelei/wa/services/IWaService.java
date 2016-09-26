@@ -15,4 +15,11 @@ public interface IWaService {
      * @return
      */
     WaUser login(String userName, String password);
+
+    /**
+     * 获取用户
+     * @param pid
+     * @return
+     */
+    WaUser getWaUser(String pid);
 }

@@ -3,10 +3,10 @@ package me.kelei.wa.redis.dao;
 import me.kelei.wa.entities.WaUser;
 
 /**
- *
+ * 用户DAO
  * Created by kelei on 2016/9/25.
  */
-public interface IWaDao {
+public interface IWaUserDao {
 
     /**
      * 获取用户
