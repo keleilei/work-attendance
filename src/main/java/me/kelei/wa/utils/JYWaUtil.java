@@ -126,6 +126,7 @@ public class JYWaUtil {
      * @param cookieValue    验证登录必须参数
      * @param pn              当前页数
      * @param startDate      查询起始日期
+     * @param endDate        查询结束日期
      * @param recordList     存放考勤记录
      * @return 总页数
      * @throws IOException

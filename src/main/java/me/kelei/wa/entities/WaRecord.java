@@ -2,13 +2,14 @@ package me.kelei.wa.entities;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 考勤记录
  * Created by kelei on 2016/9/24.
  */
-public class WaRecord {
+public class WaRecord implements Serializable{
 
     //考勤号
     private String waPid;

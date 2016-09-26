@@ -33,7 +33,10 @@ public class WaLogin {
     @Path("validate")
     @Produces(MediaType.APPLICATION_JSON)
     public String validateUser(@FormParam("wapid") String pid, @FormParam("wapwd")String password){
-        WaUser waUser = ijyWaDataService.login(pid, password);
+        WaUser waUser = ijyWaDataService.getWaUser(pid);
+        if(waUser == null){
+            waUser = ijyWaDataService.saveUser(pid, password);
+        }
         boolean isValidate = false;
         if(waUser != null){
             isValidate = true;

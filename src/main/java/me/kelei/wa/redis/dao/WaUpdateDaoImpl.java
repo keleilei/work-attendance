@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
  * Created by kelei on 2016/9/26.
  */
 @Repository
-public class WaUpdateImpl implements IWaUpdateDao{
+public class WaUpdateDaoImpl implements IWaUpdateDao{
 
     @Autowired
     private RedisTemplate<String, JSONObject> template;

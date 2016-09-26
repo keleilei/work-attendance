@@ -1,6 +1,9 @@
 package me.kelei.wa.services;
 
+import me.kelei.wa.entities.WaRecord;
 import me.kelei.wa.entities.WaUser;
+
+import java.util.List;
 
 /**
  * 从精友考勤系统获取数据
@@ -9,12 +12,12 @@ import me.kelei.wa.entities.WaUser;
 public interface IWaService {
 
     /**
-     * 登录精友考勤网站
+     * 保存用户信息
      * @param userName
      * @param password
      * @return
      */
-    WaUser login(String userName, String password);
+    WaUser saveUser(String userName, String password);
 
     /**
      * 获取用户
@@ -22,4 +25,17 @@ public interface IWaService {
      * @return
      */
     WaUser getWaUser(String pid);
+
+    /**
+     * 根据日期查询考勤记录
+     * @param queryDate 查询日期（yyyy年MM月）
+     * @return
+     */
+    List<WaRecord> getRecordList(String queryDate);
+
+    /**
+     * 批量保存考勤记录
+     * @param recordList
+     */
+    void saveWaRecordList(List<WaRecord> recordList);
 }
