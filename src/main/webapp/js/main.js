@@ -6,7 +6,6 @@ $(function(){
 });
 
 function getRecord(){
-    console.log("aaaaaaaaaaaaaaaaa");
     $.ajax({
         url : "rest/data/get",
         method : "get",

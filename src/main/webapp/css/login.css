@@ -1,9 +1,17 @@
 .walogin{
-    padding-top: 10%;
+    position: absolute;
+    width: 400px !important;
+    height: auto;
+    background: #eee;
+    top: 50%;
+    left: 50%;
+    margin: -200px 0 0 -200px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    z-index: 100;
 }
 
 .walogin .segment{
-    width: 400px;
     margin: 0 auto;
 }
 
