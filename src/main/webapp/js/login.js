@@ -67,7 +67,7 @@ function addAutoLogin(){
 
 function tada(message){
     $(".ui.dimmer").dimmer("hide");
-    $(".ui.segment").transition('tada');
+    $(".walogin").transition('tada');
     $(".ui.message").show().find("p").text(message);
 }
 
