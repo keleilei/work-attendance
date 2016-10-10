@@ -15,7 +15,7 @@ public class RedisTest {
         jedis.auth("kelei");
     }
 
-    @org.junit.Test
+    @Test
     public void testString(){
         jedis.set("a","hello world!");
         String str = jedis.get("a");
