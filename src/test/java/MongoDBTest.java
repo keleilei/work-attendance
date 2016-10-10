@@ -42,7 +42,7 @@ public class MongoDBTest {
     }
 
     @After
-    public void destory(){
+    public void destroy(){
         mongoClient.close();
     }
 }
