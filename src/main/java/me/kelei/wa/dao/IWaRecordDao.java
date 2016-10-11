@@ -1,4 +1,4 @@
-package me.kelei.wa.redis.dao;
+package me.kelei.wa.dao;
 
 import me.kelei.wa.entities.WaRecord;
 

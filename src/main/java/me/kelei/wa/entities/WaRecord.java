@@ -11,12 +11,17 @@ import java.util.Date;
  */
 public class WaRecord implements Serializable{
 
+    private String id;
+
     //考勤号
     private String waPid;
 
     //考勤日期
     @JSONField(format="yyyy-MM-dd HH:mm:ss")
     private Date waDate;
+
+    //星期
+    private String waWeek;
 
     //考勤类型
     private String waType;
@@ -76,5 +81,21 @@ public class WaRecord implements Serializable{
 
     public void setWaState(String waState) {
         this.waState = waState;
+    }
+
+    public String getWaWeek() {
+        return waWeek;
+    }
+
+    public void setWaWeek(String waWeek) {
+        this.waWeek = waWeek;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

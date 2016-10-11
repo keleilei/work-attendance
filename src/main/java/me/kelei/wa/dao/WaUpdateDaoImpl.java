@@ -1,4 +1,4 @@
-package me.kelei.wa.redis.dao;
+package me.kelei.wa.dao;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
