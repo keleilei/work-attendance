@@ -35,6 +35,11 @@ public class WaRecord implements Serializable{
     //考勤状态 1：正常，2：迟到，3：早退，4：旷工，5：假期加班
     private String waState;
 
+    @Override
+    public String toString(){
+        return waPid+waDate.getTime();
+    }
+
     public Date getWaDate() {
         return waDate;
     }

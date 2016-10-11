@@ -47,7 +47,11 @@ public class LoginFilter implements Filter {
 
                 }
 
-                if("on".equals(rememberme)){
+                response.setDateHeader("Expires",0);
+                response.setHeader("Cache-Control","no-cache");
+                response.setHeader("Pragma","no-cache");
+
+                if("1".equals(rememberme)){
                     request.setAttribute("wapid",wapid);
                     request.getRequestDispatcher("/rest/login/rememberMe").forward(request, response);
                 }else{

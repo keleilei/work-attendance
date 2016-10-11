@@ -12,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -38,6 +37,7 @@ public class WaServiceImpl implements IWaService {
     public WaUser saveUser(String pid, String password){
         WaUser waUser = JYWaUtil.getJYWaUser(pid, password);
         if(waUser != null){
+
             waUserDao.saveWaUser(waUser);
 
             WaUpdate waUpdate = new WaUpdate();
@@ -53,20 +53,40 @@ public class WaServiceImpl implements IWaService {
     }
 
     public List<WaRecord> getRecordList(String queryDate){
-
-
-        return null;
+        return waRecordDao.queryRecordListByMonth(queryDate);
     }
 
-    public void saveWaRecordList(List<WaRecord> recordList){
-        WaRecord record = new WaRecord();
-        record.setWaPid("1098");
-        record.setWaDevice("aaaaaaaaa");
-        record.setWaDate(new Date());
-        record.setWaType("bbb");
-        record.setWaValidateWay("cccccc");
-        record.setWaState("ddddddddddd");
-        waRecordDao.saveWaRecord(record);
+    public List<WaRecord> saveWaRecordList(List<WaRecord> recordList, String queryDate){
+        List<WaRecord> localRecordList = waRecordDao.queryRecordListByMonth(queryDate);
+        //本地没有记录，则保存全部精友记录
+        if(localRecordList == null || localRecordList.isEmpty()){
+            waRecordDao.saveRecordList(recordList);
+        }else{//本地有记录，则比对记录，保存本地没有的记录
+            if(recordList.size() != localRecordList.size()){
+                waRecordDao.saveRecordList(getUnsavedRecordList(recordList, localRecordList));
+            }
+        }
+
+        return waRecordDao.queryRecordListByMonth(queryDate);
+    }
+
+    /**
+     * 如果本地记录和精友考勤记录的数量不同，则返回本地没有的记录
+     * @return
+     */
+    private List<WaRecord> getUnsavedRecordList(List<WaRecord> jyRecordList, List<WaRecord> localRecordList){
+        Set<String> set = new HashSet<>();
+        List<WaRecord> unsavedRecordList = new ArrayList<>();
+        for(WaRecord record : localRecordList){
+            set.add(record.toString());
+        }
+        for(WaRecord record : jyRecordList){
+            boolean isRepeat = set.add(record.toString());
+            if(isRepeat){
+                unsavedRecordList.add(record);
+            }
+        }
+        return unsavedRecordList;
     }
 
 }

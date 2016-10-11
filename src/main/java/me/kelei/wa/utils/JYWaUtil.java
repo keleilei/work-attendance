@@ -93,6 +93,36 @@ public class JYWaUtil {
     /**
      * 获取考勤记录
      * @param waUser
+     * @param month
+     * @return
+     */
+    public static List<WaRecord> getJYWaRecordList(WaUser waUser, String month){
+        List<WaRecord> recordList = new ArrayList<>();
+        HttpClient client = jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd());
+        List<Cookie> cookies =httpCookieStore.getCookies();
+        String cookieName = "";
+        String cookieValue = "";
+        for (Cookie c : cookies) {
+            cookieName = c.getName();
+            cookieValue = c.getValue();
+        }
+        try {
+            int pageNum = 1;
+            int pageCount;
+            do{
+                pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum,
+                        WaUtil.getStartDateOfMonth(month), WaUtil.getEndDateOfMonth(month), recordList);
+                pageNum++;
+            }while (pageNum <= pageCount);
+        }catch (Exception e){
+            logger.error("获取考勤记录失败！", e);
+        }
+        return recordList;
+    }
+
+    /**
+     * 获取考勤记录
+     * @param waUser
      * @param startDate
      * @return
      */
@@ -110,7 +140,7 @@ public class JYWaUtil {
             int pageNum = 1;
             int pageCount;
             do{
-                pageCount = getRecordByPage(waUser.getWaUid(), cookieName, cookieValue, pageNum, startDate, endDate, recordList);
+                pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum, startDate, endDate, recordList);
                 pageNum++;
             }while (pageNum <= pageCount);
         }catch (Exception e){
@@ -121,7 +151,7 @@ public class JYWaUtil {
 
     /**
      * 分页获取考勤记录
-     * @param uid             用户UID
+     * @param waUser          用户
      * @param cookieName     验证登录必须参数
      * @param cookieValue    验证登录必须参数
      * @param pn              当前页数
@@ -131,12 +161,12 @@ public class JYWaUtil {
      * @return 总页数
      * @throws IOException
      */
-    private static int getRecordByPage(String uid, String cookieName, String cookieValue, int pn, Date startDate,
+    private static int getRecordByPage(WaUser waUser, String cookieName, String cookieValue, int pn, Date startDate,
                                        Date endDate, List<WaRecord> recordList) throws IOException {
         String fromDate = DateFormatUtils.format(startDate, "yyyy-MM-dd");
         String toDate = DateFormatUtils.format(endDate, "yyyy-MM-dd");
         String kgUrl = "http://124.42.1.13:8000/iclock/staff/transaction/?p=" + pn +
-                "&t=staff_transaction.html&UserID__id__exact=" + uid +"&fromTime=" + fromDate + "&toTime=" + toDate;
+                "&t=staff_transaction.html&UserID__id__exact=" + waUser.getWaUid() +"&fromTime=" + fromDate + "&toTime=" + toDate;
         Document document = Jsoup.connect(kgUrl).cookie(cookieName, cookieValue).get();
         Elements rows = document.select("tr[class^=row]");
         String script = document.data();
@@ -146,8 +176,10 @@ public class JYWaUtil {
         for(int i = 0; i < rows.size(); i++){
             Elements cols = rows.get(i).getElementsByTag("td");
             WaRecord record = new WaRecord();
+            record.setWaPid(waUser.getWaPid());
             try {
                 record.setWaDate(DateUtils.parseDate(cols.get(1).text(),"yyyy-MM-dd HH:mm:ss"));
+                record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
             } catch (ParseException e) {
                 logger.error("解析日期出错！", e);
             }

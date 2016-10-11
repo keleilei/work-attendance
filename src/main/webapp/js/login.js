@@ -2,13 +2,15 @@ $(function(){
     $(".ui.message").hide();
     $(".ui.checkbox").checkbox();
 
-    $("#login-btn").click(function () {
+    login();
+});
 
+function login(){
+    $("#login-btn").click(function () {
         if(!validateFields()){
             tada(LOGIN_MESSAGE_NULLABLE);
             return;
         }
-
         var formData = $("form:eq(0)").serialize();
         $(".ui.dimmer").dimmer({closable: false}).dimmer("show");
         $.ajax({
@@ -30,7 +32,7 @@ $(function(){
         });
 
     });
-});
+}
 
 function validateFields(){
     var $wapid = $("input[name='wapid']");
@@ -58,10 +60,10 @@ function removeAutoLogin(){
 
 function addAutoLogin(){
     var wapid = $("input[name='wapid']").val();
-    var rememberme = $("input[name='rememberme']").val();
-    if(rememberme == "on"){
-        $.cookie("wapid", wapid,{expires: 365});
-        $.cookie("rememberme", rememberme,{expires: 365});
+    var $rememberme = $("input[name='rememberme']");
+    if($rememberme.prop("checked")){
+        $.cookie("wapid", wapid, {expires: 365});
+        $.cookie("rememberme", "1", {expires: 365});
     }
 }
 

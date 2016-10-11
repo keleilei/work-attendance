@@ -7,7 +7,7 @@ $(function(){
 
 function getRecord(){
     $.ajax({
-        url : "rest/data/get",
+        url : "rest/data/month",
         method : "get",
         dataType : "json"
     }).done(function (data) {

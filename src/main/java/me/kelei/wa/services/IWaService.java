@@ -37,5 +37,5 @@ public interface IWaService {
      * 批量保存考勤记录
      * @param recordList
      */
-    void saveWaRecordList(List<WaRecord> recordList);
+    List<WaRecord> saveWaRecordList(List<WaRecord> recordList, String queryDate);
 }
