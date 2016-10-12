@@ -1,0 +1,11 @@
+.banner{
+    position: fixed;
+    height: 50px;
+    width: 100%;
+    top: 0;
+    background-color: #333;
+}
+
+.container{
+    padding-top: 55px;
+}

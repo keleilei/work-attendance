@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.util.*;
 
@@ -53,7 +54,10 @@ public class HolidayUtil {
     public static List<Holiday> getHolidayListByMonth(String month){
         List<Holiday> holidayList = new ArrayList<>();
         try{
-            URL url = new URL("https://sp0.baidu.com/8aQDcjqpAAV3otqbppnN2DJv/api.php?co=&resource_id=6018&oe=utf8&format=json&t=1473170707027&query=" + month);
+            String urlStr = "https://sp0.baidu.com/8aQDcjqpAAV3otqbppnN2DJv/api.php" +
+                    "?co=&resource_id=6018&t=1476274483820&ie=utf8&oe=utf8&format=json" +
+                    "&tn=baidu&_=1476274470215&query="+URLEncoder.encode(month, "utf-8");
+            URL url = new URL(urlStr);
             HttpURLConnection urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();

@@ -17,6 +17,6 @@ public class WaTest {
 
     @Test
     public void test() throws InterruptedException {
-        System.out.println("2015-06".substring(0,4));
+        System.out.println(new Date().getTime());
     }
 }

@@ -61,7 +61,7 @@ public class WaServiceImpl implements IWaService {
         List<WaRecord> localRecordList = mongoDao.queryRecordListByMonth(queryDate);
         // 本地没有记录，则保存全部精友记录
         // 本地有记录，则比对记录，保存本地没有的记录
-        if(localRecordList != null && localRecordList.isEmpty()){
+        if(localRecordList != null && !localRecordList.isEmpty()){
             recordList = getUnsavedRecordList(recordList, localRecordList);
         }
         //处理考勤数据
