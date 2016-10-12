@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  */
 public class LoginFilter implements Filter {
 
-    private String regPath = "/css/*|/js/*|/fonts/*|/login/*";
+    private String regPath = "/css/*|/image/*|/js/*|/fonts/*|/login/*";
 
     public void init(FilterConfig filterConfig) throws ServletException {
 
