@@ -16,7 +16,7 @@
 <body>
 
     <div class="ui container">
-        <table class="ui selectable celled table">
+        <table id="recordTable" class="ui selectable celled table">
             <thead>
                 <tr>
                     <th>考勤日期</th>
@@ -28,7 +28,11 @@
                 </tr>
             </thead>
             <tbody>
-
+                <tr>
+                    <td colspan="6">
+                        <i class="spinner loading icon"></i>加载中...
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

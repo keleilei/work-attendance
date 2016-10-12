@@ -1,16 +1,13 @@
 package me.kelei.wa.dao;
 
-import com.alibaba.fastjson.JSON;
+import me.kelei.wa.entities.Holiday;
 import me.kelei.wa.entities.WaRecord;
 import me.kelei.wa.utils.WaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
 import java.util.List;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -21,7 +18,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
  * Created by kelei on 2016/9/26.
  */
 @Repository
-public class WaRecordDaoImpl implements IWaRecordDao{
+public class WaMongoDaoImpl implements IWaMongoDao {
 
 
     @Autowired
@@ -34,9 +31,17 @@ public class WaRecordDaoImpl implements IWaRecordDao{
     }
 
     public List<WaRecord> queryRecordListByMonth(String queryDate){
-        List<WaRecord> recordList = operations.find(query(where("waDate").gte(WaUtil.getStartDateOfMonth(queryDate)).
+        return operations.find(query(where("waDate").gte(WaUtil.getStartDateOfMonth(queryDate)).
                 lte(WaUtil.getEndDateOfMonth(queryDate))), WaRecord.class);
-        return recordList;
+    }
+
+    public void saveHolidayList(List<Holiday> holidayList){
+        if(holidayList != null && !holidayList.isEmpty())
+            operations.insert(holidayList, Holiday.class);
+    }
+
+    public List<Holiday> queryHolidayListByYear(String year){
+        return operations.find(query(where("year").is(year)), Holiday.class);
     }
 
 }

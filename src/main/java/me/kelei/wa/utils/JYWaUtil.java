@@ -92,38 +92,19 @@ public class JYWaUtil {
 
     /**
      * 获取考勤记录
-     * @param waUser
-     * @param month
+     * @param waUser 用户
+     * @param month yyyy-MM
      * @return
      */
     public static List<WaRecord> getJYWaRecordList(WaUser waUser, String month){
-        List<WaRecord> recordList = new ArrayList<>();
-        HttpClient client = jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd());
-        List<Cookie> cookies =httpCookieStore.getCookies();
-        String cookieName = "";
-        String cookieValue = "";
-        for (Cookie c : cookies) {
-            cookieName = c.getName();
-            cookieValue = c.getValue();
-        }
-        try {
-            int pageNum = 1;
-            int pageCount;
-            do{
-                pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum,
-                        WaUtil.getStartDateOfMonth(month), WaUtil.getEndDateOfMonth(month), recordList);
-                pageNum++;
-            }while (pageNum <= pageCount);
-        }catch (Exception e){
-            logger.error("获取考勤记录失败！", e);
-        }
-        return recordList;
+        return getJYWaRecordList(waUser,WaUtil.getStartDateOfMonth(month), WaUtil.getEndDateOfMonth(month));
     }
 
     /**
      * 获取考勤记录
-     * @param waUser
-     * @param startDate
+     * @param waUser 用户
+     * @param startDate 开始日期
+     * @param endDate 结束日期
      * @return
      */
     public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate, Date endDate){
