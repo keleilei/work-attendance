@@ -32,7 +32,7 @@ public class WaRecord implements Serializable{
     //考勤设备
     private String waDevice;
 
-    //考勤状态 0:无效记录，1：正常，2：迟到，3：早退，4：旷工，5：假期加班
+    //考勤状态 0:无效记录，1：正常，2：迟到，3：早退，4：旷工，5：加班
     private String waState;
 
     @Override

@@ -1,13 +1,16 @@
 package me.kelei.wa.utils;
 
+import me.kelei.wa.entities.Holiday;
+import me.kelei.wa.entities.WaRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 工具类
@@ -34,6 +37,16 @@ public class WaUtil {
     }
 
     /**
+     * 获取月份第一天
+     * @param month yyyy-MM
+     * @return
+     */
+    public static String getStartDateOfMonthStr(String month){
+        String startDate = month + "-01";
+        return startDate;
+    }
+
+    /**
      * 获取月份最后一天
      * @param month yyyy-MM
      * @return
@@ -43,6 +56,112 @@ public class WaUtil {
         calendar.setTime(getStartDateOfMonth(month));
         calendar.set(Calendar.DATE, calendar.getActualMaximum(Calendar.DATE));
         return calendar.getTime();
+    }
+
+    /**
+     * 获取月份最后一天
+     * @param month yyyy-MM
+     * @return
+     */
+    public static String getEndDateOfMonthStr(String month){
+        return DateFormatUtils.format(getEndDateOfMonth(month), "yyyy-MM-dd");
+    }
+
+    /**
+     * 将假日列表转换为map
+     * @param holidayList
+     * @return
+     */
+    public static Map<String, String> holidayListToMap(List<Holiday> holidayList){
+        Map<String, String> holidayMap = new HashMap<>();
+        if(holidayList != null && !holidayList.isEmpty()){
+            for(Holiday holiday : holidayList){
+                holidayMap.put(holiday.getHolidayDate(), holiday.getHolidayStatus());
+            }
+        }
+        return holidayMap;
+    }
+
+    /**
+     * 获取给定月份的日期列表
+     * @param month yyyy-MM
+     * @return
+     * @throws Exception
+     */
+    public static List<String> getDateRangeByMonth(String month){
+        return getDateRange(getStartDateOfMonthStr(month), getEndDateOfMonthStr(month));
+    }
+
+    /**
+     * 获取给定两个日期之前的区间日期列表
+     * @param fromDateStr
+     * @param toDateStr
+     * @return
+     * @throws Exception
+     */
+    public static List<String> getDateRange(String fromDateStr, String toDateStr){
+        List<String> rangeList = new ArrayList<String>();
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date fromDate = sdf.parse(fromDateStr);
+            Date toDate = sdf.parse(toDateStr);
+            GregorianCalendar gc=new GregorianCalendar();
+            gc.setTime(fromDate);
+            while(gc.getTime().getTime() <= toDate.getTime()){
+                String tmpDate = sdf.format(gc.getTime());
+                rangeList.add(tmpDate);
+                gc.add(GregorianCalendar.DAY_OF_MONTH, 1);
+            }
+        }catch (Exception e){
+            logger.error("获取日期敬意失败！", e);
+        }
+        return rangeList;
+    }
+
+    /**
+     * 按天给记录归类
+     * @return
+     */
+    public static Map<String, List<WaRecord>> sortRecordByDay(List<WaRecord> recordList){
+        Map<String, List<WaRecord>> recordMap = new HashMap<>();
+        if(recordList != null && !recordList.isEmpty()){
+            int size = recordList.size();
+            for(int i = 0; i < size; i++){
+                //如果已经归类完成，列表为空，跳出循环
+                if(recordList.isEmpty()) break;
+                //每次获取列表的第一个日期，然后循环列表，找到相同日期的记录，存入同一天的列表中，然后把它从大列表中删除
+                String date = DateFormatUtils.format(recordList.get(0).getWaDate(), "yyyy-MM-dd");
+                List<WaRecord> dayRecordList = new ArrayList<>();
+                recordMap.put(date, dayRecordList);
+                for(int j = 0; j < recordList.size(); j++){
+                    WaRecord record = recordList.get(j);
+                    String waDate = DateFormatUtils.format(record.getWaDate(), "yyyy-MM-dd");
+                    if(date.equals(waDate)){
+                        dayRecordList.add(record);
+                        recordList.remove(j);
+                        j--;
+                    }
+                }
+            }
+        }
+        return recordMap;
+    }
+
+    /**
+     * 判断是否是周末
+     * @param date
+     * @return
+     */
+    public static boolean isWeekend(String date){
+        try{
+            String week = DateFormatUtils.format(DateUtils.parseDate(date, "yyyy-MM-dd"),"EEEE");
+            if(week.equals("星期六") || week.equals("星期日")){
+                return true;
+            }
+        }catch (Exception e){
+            logger.error("解析日期失败！", e);
+        }
+        return false;
     }
 
 }

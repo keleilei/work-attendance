@@ -27,15 +27,8 @@ public interface IWaService {
     WaUser getWaUser(String pid);
 
     /**
-     * 根据日期查询考勤记录
-     * @param queryDate 查询日期（yyyy年MM月）
-     * @return
-     */
-    List<WaRecord> getRecordList(String queryDate);
-
-    /**
      * 批量保存考勤记录
      * @param recordList
      */
-    List<WaRecord> saveWaRecordList(List<WaRecord> recordList, String queryDate);
+    List<WaRecord> saveWaRecordList(WaUser user, List<WaRecord> recordList, String queryDate);
 }

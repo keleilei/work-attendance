@@ -50,7 +50,7 @@ public class WaData {
         //比对本地数据并返回处理过的记录
         List<WaRecord> recordList = null;
         if(!jyRecordList.isEmpty()){
-            recordList = ijyWaDataService.saveWaRecordList(jyRecordList, queryDate);
+            recordList = ijyWaDataService.saveWaRecordList(user, jyRecordList, queryDate);
         }
 
         return JSON.toJSONString(recordList);

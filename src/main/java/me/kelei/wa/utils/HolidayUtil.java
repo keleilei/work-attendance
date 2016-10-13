@@ -119,8 +119,9 @@ public class HolidayUtil {
             holiday.setHolidayName(holidayName);
             holiday.setHolidayDesc(holidayDesc);
             holiday.setHolidayStatus(day.getString("status"));
-            holiday.setHolidayDate(DateUtils.parseDate(day.getString("date"),"yyyy-M-d"));
-            holiday.setYear(DateFormatUtils.format(holiday.getHolidayDate(), "yyyy"));
+            holiday.setHolidayDate(DateFormatUtils.format(DateUtils.parseDate(day.getString("date"),"yyyy-M-d"),"yyyy-MM-dd"));
+            if(!StringUtils.isEmpty(holiday.getHolidayDate()))
+                holiday.setYear(holiday.getHolidayDate().substring(0, 4));
             holidayList.add(holiday);
         }
     }
@@ -132,7 +133,7 @@ public class HolidayUtil {
      */
     private static List<Holiday> removeRepeat(List<Holiday> holidayList){
         List<Holiday> newList = new ArrayList<>();
-        Set<Date> set = new HashSet<>();
+        Set<String> set = new HashSet<>();
         for(Holiday holiday : holidayList){
             boolean isRepeat = set.add(holiday.getHolidayDate());
             if(isRepeat){

@@ -2,6 +2,7 @@ package me.kelei.wa.dao;
 
 import me.kelei.wa.entities.Holiday;
 import me.kelei.wa.entities.WaRecord;
+import me.kelei.wa.entities.WaUser;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public interface IWaMongoDao {
      * @param queryDate
      * @return
      */
-    List<WaRecord> queryRecordListByMonth(String queryDate);
+    List<WaRecord> queryRecordListByMonth(WaUser user, String queryDate);
 
     /**
      * 保存节假日

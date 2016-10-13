@@ -2,6 +2,7 @@ package me.kelei.wa.dao;
 
 import me.kelei.wa.entities.Holiday;
 import me.kelei.wa.entities.WaRecord;
+import me.kelei.wa.entities.WaUser;
 import me.kelei.wa.utils.WaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -30,9 +31,11 @@ public class WaMongoDaoImpl implements IWaMongoDao {
             operations.insert(recordList, WaRecord.class);
     }
 
-    public List<WaRecord> queryRecordListByMonth(String queryDate){
-        return operations.find(query(where("waDate").gte(WaUtil.getStartDateOfMonth(queryDate)).
-                lte(WaUtil.getEndDateOfMonth(queryDate))), WaRecord.class);
+    public List<WaRecord> queryRecordListByMonth(WaUser user, String queryDate){
+        return operations.find(query(where("waDate").
+                gte(WaUtil.getStartDateOfMonth(queryDate)).
+                lte(WaUtil.getEndDateOfMonth(queryDate)).
+                and("waPid").is(user.getWaPid())), WaRecord.class);
     }
 
     public void saveHolidayList(List<Holiday> holidayList){

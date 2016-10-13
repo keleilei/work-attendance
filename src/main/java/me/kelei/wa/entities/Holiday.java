@@ -17,8 +17,7 @@ public class Holiday {
     private String holidayName;
 
     //日期
-    @JSONField(format = "yyyy-MM-dd")
-    private Date holidayDate;
+    private String holidayDate;
 
     //节假日描述
     private String holidayDesc;
@@ -42,11 +41,11 @@ public class Holiday {
         this.holidayName = holidayName;
     }
 
-    public Date getHolidayDate() {
+    public String getHolidayDate() {
         return holidayDate;
     }
 
-    public void setHolidayDate(Date holidayDate) {
+    public void setHolidayDate(String holidayDate) {
         this.holidayDate = holidayDate;
     }
 
