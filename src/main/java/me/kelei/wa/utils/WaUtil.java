@@ -152,16 +152,39 @@ public class WaUtil {
      * @param date
      * @return
      */
-    public static boolean isWeekend(String date){
-        try{
-            String week = DateFormatUtils.format(DateUtils.parseDate(date, "yyyy-MM-dd"),"EEEE");
-            if(week.equals("星期六") || week.equals("星期日")){
-                return true;
-            }
-        }catch (Exception e){
-            logger.error("解析日期失败！", e);
-        }
-        return false;
+    public static boolean isWeekend(String date) throws ParseException {
+        String week = DateFormatUtils.format(DateUtils.parseDate(date, "yyyy-MM-dd"),"EEEE");
+        return week.equals("星期六") || week.equals("星期日");
+    }
+
+    /**
+     * 判断是否迟到
+     * @param date
+     * @return
+     */
+    public static boolean isLate(Date date) throws ParseException {
+        String standardDate = DateFormatUtils.format(date, "yyyy-MM-dd") + " 09:06:00";
+        return date.getTime() > DateUtils.parseDate(standardDate, "yyyy-MM-dd HH:mm:ss").getTime();
+    }
+
+    /**
+     * 判断是否早退
+     * @param date
+     * @return
+     */
+    public static boolean isEarly(Date date) throws ParseException {
+        String standardDate = DateFormatUtils.format(date, "yyyy-MM-dd") + " 18:00:00";
+        return date.getTime() < DateUtils.parseDate(standardDate, "yyyy-MM-dd HH:mm:ss").getTime();
+    }
+
+    /**
+     * 判断是否是下午
+     * @param date
+     * @return
+     */
+    public static boolean isAfternoon(Date date) throws ParseException {
+        String standardDate = DateFormatUtils.format(date, "yyyy-MM-dd") + " 13:00:00";
+        return date.getTime() > DateUtils.parseDate(standardDate, "yyyy-MM-dd HH:mm:ss").getTime();
     }
 
 }

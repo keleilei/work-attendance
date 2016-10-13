@@ -158,6 +158,7 @@ public class JYWaUtil {
             Elements cols = rows.get(i).getElementsByTag("td");
             WaRecord record = new WaRecord();
             record.setWaPid(waUser.getWaPid());
+            record.setWaState(WaDict.RECORD_STATE_INVALID);//默认无效记录
             try {
                 record.setWaDate(DateUtils.parseDate(cols.get(1).text(),"yyyy-MM-dd HH:mm:ss"));
                 record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));

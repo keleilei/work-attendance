@@ -68,11 +68,7 @@ public class WaServiceImpl implements IWaService {
         }
         if(!recordList.isEmpty()){
             //处理考勤数据
-            try{
-                handleRecordList(user, recordList, queryDate);
-            }catch (Exception e){
-                log.error("处理精友考勤数据出错！", e);
-            }
+            recordList = handleRecordList(user, recordList, queryDate);
             //将处理过的考勤数据入库
             mongoDao.saveRecordList(recordList);
             //返回查询结果
@@ -100,7 +96,7 @@ public class WaServiceImpl implements IWaService {
         return unsavedRecordList;
     }
 
-    private void handleRecordList(WaUser user, List<WaRecord> recordList, String queryDate) throws ParseException {
+    private List<WaRecord> handleRecordList(WaUser user, List<WaRecord> recordList, String queryDate){
         List<WaRecord> handledRecordList = new ArrayList<>();
         String year = queryDate.substring(0,4);
 
@@ -120,33 +116,101 @@ public class WaServiceImpl implements IWaService {
         List<String> dateRangeList = WaUtil.getDateRangeByMonth(queryDate);
 
         for(String dateStr : dateRangeList){
+            try {
+                Date currentDate = DateUtils.parseDate(dateStr, "yyyy-MM-dd");
+                //如果循环日期大于当前日期，则跳出循环
+                if(currentDate.getTime() > new Date().getTime()){
+                    return handledRecordList;
+                }
+                String holidayStatus = holidayMap.get(dateStr);
 
-            String holidayStatus = holidayMap.get(dateStr);
-            boolean workFlag;//工作标志  true:工作日，false:假期
-            if(!StringUtils.isEmpty(holidayStatus)){
-                if("1".equals(holidayStatus)) workFlag = false;//放假
-                else workFlag = true;//补休
-            }else
-                workFlag = !WaUtil.isWeekend(dateStr);
+                boolean workFlag;//工作标志  true:工作日，false:假期
+                if(!StringUtils.isEmpty(holidayStatus)){
+                    workFlag = !"1".equals(holidayStatus);
+                }else
+                    workFlag = !WaUtil.isWeekend(dateStr);
 
-            List<WaRecord> dayRecordList = recordMap.get(dateStr);
-            if(workFlag){
-                if(dayRecordList == null || dayRecordList.isEmpty()){//工作日没有记录，增加旷工记录
-                    WaRecord record = new WaRecord();
-                    record.setWaPid(user.getWaPid());
-                    record.setWaDate(DateUtils.parseDate(dateStr, "yyyy-MM-dd"));
-                    record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
-                    record.setWaState(WaDict.RECORD_STATE_ABSENTEEISM);
-                    handledRecordList.add(record);
+                //根据每天的记录数和时间来设置考勤状态
+                List<WaRecord> dayRecordList = recordMap.get(dateStr);
+                if(workFlag){
+                    if(dayRecordList == null || dayRecordList.isEmpty()){//工作日没有记录，增加旷工记录
+                        WaRecord record = new WaRecord();
+                        record.setWaPid(user.getWaPid());
+                        record.setWaDate(currentDate);
+                        record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
+                        record.setWaState(WaDict.RECORD_STATE_ABSENTEEISM);
+                        handledRecordList.add(record);
+                    }else{
+                        if(dayRecordList.size() == 1){
+                            WaRecord record  = dayRecordList.get(0);
+                            WaRecord addRecord = new WaRecord();
+                            addRecord.setWaPid(user.getWaPid());
+                            addRecord.setWaDate(currentDate);
+                            addRecord.setWaWeek(record.getWaWeek());
+                            if(!WaUtil.isLate(record.getWaDate())){//早上没有迟到，晚上忘打卡
+                                record.setWaState(WaDict.RECORD_STATE_NORMAL);
+                                addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
+                                handledRecordList.add(record);
+                                handledRecordList.add(addRecord);
+                            }else if(!WaUtil.isEarly(record.getWaDate())){//晚上没有早退，早上忘打卡
+                                record.setWaState(WaDict.RECORD_STATE_NORMAL);
+                                addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
+                                handledRecordList.add(addRecord);
+                                handledRecordList.add(record);
+                            }else{//其它时间打卡，算迟到，晚上忘打卡
+                                record.setWaState(WaDict.RECORD_STATE_LATE);
+                                addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
+                                handledRecordList.add(record);
+                                handledRecordList.add(addRecord);
+                            }
+                        }else if(dayRecordList.size() == 2){
+                            setRecordState(dayRecordList.get(0), 0);
+                            setRecordState(dayRecordList.get(1), 1);
+                            handledRecordList.addAll(dayRecordList);
+                        }else{
+                            setRecordState(dayRecordList.get(0), 0);
+                            setRecordState(dayRecordList.get(dayRecordList.size() - 1), 1);
+                            handledRecordList.addAll(dayRecordList);
+                        }
+                    }
                 }else{
-
+                    if(dayRecordList != null && !dayRecordList.isEmpty()){
+                        if(dayRecordList.size() > 1){
+                            dayRecordList.get(0).setWaState(WaDict.RECORD_STATE_OVERTIME);
+                            dayRecordList.get(dayRecordList.size() - 1).setWaState(WaDict.RECORD_STATE_OVERTIME);
+                            handledRecordList.addAll(dayRecordList);
+                        }
+                    }
                 }
-            }else{
-                if(dayRecordList != null && !dayRecordList.isEmpty()){
-
-                }
+            }catch (ParseException e){
+                log.error("处理考勤记录时解析日期出错！", e);
             }
         }
+
+        return handledRecordList;
+    }
+
+    /**
+     * 根据记录的时间设置记录状态
+     * @param record 记录
+     * @param flag 0：早上签到，1：晚上签退
+     * @return
+     */
+    private WaRecord setRecordState(WaRecord record, int flag) throws ParseException{
+        //签到
+        if(flag == 0){
+            if(WaUtil.isLate(record.getWaDate()))
+                record.setWaState(WaDict.RECORD_STATE_LATE);
+            else
+                record.setWaState(WaDict.RECORD_STATE_NORMAL);
+        }else{
+            //签退
+            if(WaUtil.isEarly(record.getWaDate()))
+                record.setWaState(WaDict.RECORD_STATE_EARLY);
+            else
+                record.setWaState(WaDict.RECORD_STATE_NORMAL);
+        }
+        return record;
     }
 
 }

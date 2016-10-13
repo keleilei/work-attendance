@@ -13,5 +13,6 @@ public class WaDict {
     public static String RECORD_STATE_EARLY = "3";
     public static String RECORD_STATE_ABSENTEEISM = "4";
     public static String RECORD_STATE_OVERTIME = "5";
+    public static String RECORD_STATE_FORGET = "6";
 
 }
