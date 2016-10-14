@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,8 +97,26 @@ public class JYWaUtil {
      * @param month yyyy-MM
      * @return
      */
-    public static List<WaRecord> getJYWaRecordList(WaUser waUser, String month){
-        return getJYWaRecordList(waUser,WaUtil.getStartDateOfMonth(month), WaUtil.getEndDateOfMonth(month));
+    public static List<WaRecord> getJYWaRecordList(WaUser waUser, String month) throws ConnectException {
+        List<WaRecord> recordList = null;
+        boolean retry = true;
+        int retryCount = 0;
+        while (retry){
+            try {
+                if(retryCount == 10){
+                    break;
+                }
+                recordList = getJYWaRecordList(waUser, WaUtil.getStartDateOfMonth(month), WaUtil.getEndDateOfMonth(month));
+                retry = false;
+                retryCount++;
+            } catch (Exception e) {
+                retry = true;
+            }
+        }
+        if(retry){
+            throw new ConnectException("接连精友考勤网站失败！");
+        }
+        return recordList;
     }
 
     /**
@@ -107,9 +126,9 @@ public class JYWaUtil {
      * @param endDate 结束日期
      * @return
      */
-    public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate, Date endDate){
+    public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate, Date endDate) throws IOException {
         List<WaRecord> recordList = new ArrayList<>();
-        HttpClient client = jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd());
+        jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd());
         List<Cookie> cookies =httpCookieStore.getCookies();
         String cookieName = "";
         String cookieValue = "";
@@ -117,16 +136,12 @@ public class JYWaUtil {
             cookieName = c.getName();
             cookieValue = c.getValue();
         }
-        try {
-            int pageNum = 1;
-            int pageCount;
-            do{
-                pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum, startDate, endDate, recordList);
-                pageNum++;
-            }while (pageNum <= pageCount);
-        }catch (Exception e){
-            logger.error("获取考勤记录失败！", e);
-        }
+        int pageNum = 1;
+        int pageCount;
+        do{
+            pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum, startDate, endDate, recordList);
+            pageNum++;
+        }while (pageNum <= pageCount);
         return recordList;
     }
 
@@ -148,7 +163,7 @@ public class JYWaUtil {
         String toDate = DateFormatUtils.format(endDate, "yyyy-MM-dd");
         String kgUrl = "http://124.42.1.13:8000/iclock/staff/transaction/?p=" + pn +
                 "&t=staff_transaction.html&UserID__id__exact=" + waUser.getWaUid() +"&fromTime=" + fromDate + "&toTime=" + toDate;
-        Document document = Jsoup.connect(kgUrl).cookie(cookieName, cookieValue).get();
+        Document document = Jsoup.connect(kgUrl).timeout(3000).cookie(cookieName, cookieValue).get();
         Elements rows = document.select("tr[class^=row]");
         String script = document.data();
         String tmpScrpit = script.substring(script.indexOf("page_number_emp"));

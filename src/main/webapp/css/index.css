@@ -7,5 +7,10 @@
 }
 
 .container{
-    padding-top: 55px;
+    padding-top: 65px;
 }
+
+.ui.table .hidden{
+    display: none;
+}
+

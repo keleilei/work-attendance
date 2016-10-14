@@ -145,21 +145,23 @@ public class WaServiceImpl implements IWaService {
                             WaRecord record  = dayRecordList.get(0);
                             WaRecord addRecord = new WaRecord();
                             addRecord.setWaPid(user.getWaPid());
-                            addRecord.setWaDate(currentDate);
                             addRecord.setWaWeek(record.getWaWeek());
                             if(!WaUtil.isLate(record.getWaDate())){//早上没有迟到，晚上忘打卡
                                 record.setWaState(WaDict.RECORD_STATE_NORMAL);
                                 addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
+                                addRecord.setWaDate(DateUtils.parseDate(dateStr + " 18:00:00", "yyyy-MM-dd HH:mm:ss"));
                                 handledRecordList.add(record);
                                 handledRecordList.add(addRecord);
                             }else if(!WaUtil.isEarly(record.getWaDate())){//晚上没有早退，早上忘打卡
                                 record.setWaState(WaDict.RECORD_STATE_NORMAL);
                                 addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
+                                addRecord.setWaDate(DateUtils.parseDate(dateStr + " 09:00:00", "yyyy-MM-dd HH:mm:ss"));
                                 handledRecordList.add(addRecord);
                                 handledRecordList.add(record);
                             }else{//其它时间打卡，算迟到，晚上忘打卡
                                 record.setWaState(WaDict.RECORD_STATE_LATE);
                                 addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
+                                addRecord.setWaDate(DateUtils.parseDate(dateStr + " 18:00:00", "yyyy-MM-dd HH:mm:ss"));
                                 handledRecordList.add(record);
                                 handledRecordList.add(addRecord);
                             }
