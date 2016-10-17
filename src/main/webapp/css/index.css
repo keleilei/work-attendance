@@ -4,13 +4,46 @@
     width: 100%;
     top: 0;
     background-color: #333;
+    z-index: 1000;
 }
 
 .container{
     padding-top: 65px;
 }
 
+.wa-holiday{
+    float: left;
+    width: 20%;
+}
+
+.wa-content{
+    float: left;
+    width: 60%;
+}
+
+.wa-analysis{
+    float: right;
+    width: 20%;
+}
+
+.filter{
+    height: 30px;
+}
+
+.filter .left{
+    float: left;
+}
+
+.filter .right{
+    float: right;
+    line-height: 45px;
+}
+
+.filter .checkbox{
+    margin-right: 10px;
+    font-size: 13px;
+}
+
 .ui.table .hidden{
     display: none;
 }
-

@@ -143,6 +143,7 @@ public class WaServiceImpl implements IWaService {
                     }else{
                         if(dayRecordList.size() == 1){
                             WaRecord record  = dayRecordList.get(0);
+                            boolean isToday = dateStr.equals(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
                             WaRecord addRecord = new WaRecord();
                             addRecord.setWaPid(user.getWaPid());
                             addRecord.setWaWeek(record.getWaWeek());
@@ -151,19 +152,19 @@ public class WaServiceImpl implements IWaService {
                                 addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
                                 addRecord.setWaDate(DateUtils.parseDate(dateStr + " 18:00:00", "yyyy-MM-dd HH:mm:ss"));
                                 handledRecordList.add(record);
-                                handledRecordList.add(addRecord);
+                                if(!isToday)handledRecordList.add(addRecord);
                             }else if(!WaUtil.isEarly(record.getWaDate())){//晚上没有早退，早上忘打卡
                                 record.setWaState(WaDict.RECORD_STATE_NORMAL);
                                 addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
                                 addRecord.setWaDate(DateUtils.parseDate(dateStr + " 09:00:00", "yyyy-MM-dd HH:mm:ss"));
-                                handledRecordList.add(addRecord);
+                                if(!isToday)handledRecordList.add(addRecord);
                                 handledRecordList.add(record);
                             }else{//其它时间打卡，算迟到，晚上忘打卡
                                 record.setWaState(WaDict.RECORD_STATE_LATE);
                                 addRecord.setWaState(WaDict.RECORD_STATE_FORGET);
                                 addRecord.setWaDate(DateUtils.parseDate(dateStr + " 18:00:00", "yyyy-MM-dd HH:mm:ss"));
                                 handledRecordList.add(record);
-                                handledRecordList.add(addRecord);
+                                if(!isToday)handledRecordList.add(addRecord);
                             }
                         }else if(dayRecordList.size() == 2){
                             setRecordState(dayRecordList.get(0), 0);
@@ -211,6 +212,7 @@ public class WaServiceImpl implements IWaService {
                 record.setWaState(WaDict.RECORD_STATE_EARLY);
             else
                 record.setWaState(WaDict.RECORD_STATE_NORMAL);
+            record.setWaType("下班签退");
         }
         return record;
     }
