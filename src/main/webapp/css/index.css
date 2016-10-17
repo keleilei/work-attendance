@@ -12,18 +12,57 @@
 }
 
 .wa-holiday{
-    float: left;
+    position: fixed;
+    left: 10%;
+    top: 10%;
+    width: 20%;
+}
+
+.wa-analysis{
+    position: fixed;
+    right: 10%;
+    top: 10%;
     width: 20%;
 }
 
 .wa-content{
-    float: left;
+    margin: auto;
     width: 60%;
 }
 
-.wa-analysis{
-    float: right;
-    width: 20%;
+@media only screen and (max-width: 1500px) {
+
+    .wa-holiday{
+        left: 3%;
+    }
+
+    .wa-analysis{
+        right: 3%;
+    }
+
+}
+
+@media only screen and (max-width: 1272px) {
+
+    .wa-holiday{
+        left: 2%;
+    }
+
+    .wa-analysis{
+        right: 2%;
+    }
+}
+
+@media only screen and (max-width: 992px) {
+
+    .wa-holiday{
+        display: none;
+    }
+
+    .wa-content{
+        margin: 0;
+        width: 80%;
+    }
 }
 
 .filter{
