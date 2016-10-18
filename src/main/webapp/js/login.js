@@ -6,31 +6,43 @@ $(function(){
 });
 
 function login(){
-    $("#login-btn").click(function () {
-        if(!validateFields()){
-            tada(LOGIN_MESSAGE_NULLABLE);
-            return;
-        }
-        var formData = $("form:eq(0)").serialize();
-        $(".ui.dimmer").dimmer({closable: false}).dimmer("show");
-        $.ajax({
-            url : "rest/login/validate",
-            data : formData,
-            method : "post",
-            dataType : "json"
-        }).done(function (data) {
-            console.log(data);
-            if(data.isValidate){
-                addAutoLogin();
-                window.location.reload();
-            }else{
-                removeAutoLogin();
-                tada(LOGIN_MESSAGE_USER_ERROR);
-            }
-        }).fail(function () {
-            removeAutoLogin();
-        });
 
+    //密码框回车登录
+    $("input[name='wapwd']").keyup(function(event){
+        if(event.keyCode == 13){
+            loginEvent();
+        }
+    });
+
+    //按钮登录
+    $("#login-btn").click(function () {
+        loginEvent();
+    });
+}
+
+function loginEvent() {
+    if(!validateFields()){
+        tada(LOGIN_MESSAGE_NULLABLE);
+        return;
+    }
+    var formData = $("form:eq(0)").serialize();
+    $(".ui.dimmer").dimmer({closable: false}).dimmer("show");
+    $.ajax({
+        url : "rest/login/validate",
+        data : formData,
+        method : "post",
+        dataType : "json"
+    }).done(function (data) {
+        console.log(data);
+        if(data.isValidate){
+            addAutoLogin();
+            window.location.reload();
+        }else{
+            removeAutoLogin();
+            tada(LOGIN_MESSAGE_USER_ERROR);
+        }
+    }).fail(function () {
+        removeAutoLogin();
     });
 }
 
