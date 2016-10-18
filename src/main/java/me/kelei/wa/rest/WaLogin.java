@@ -35,7 +35,10 @@ public class WaLogin {
     public String validateUser(@FormParam("wapid") String pid, @FormParam("wapwd")String password){
         WaUser waUser = ijyWaDataService.getWaUser(pid);
         if(waUser == null){
+            //保存用户
             waUser = ijyWaDataService.saveUser(pid, password);
+            //保存用户更新信息
+            ijyWaDataService.saveWaUpdate(pid);
         }
         boolean isValidate = false;
         if(waUser != null){

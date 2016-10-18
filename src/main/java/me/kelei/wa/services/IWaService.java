@@ -1,8 +1,11 @@
 package me.kelei.wa.services;
 
 import me.kelei.wa.entities.WaRecord;
+import me.kelei.wa.entities.WaUpdate;
 import me.kelei.wa.entities.WaUser;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.List;
 
 /**
@@ -27,8 +30,22 @@ public interface IWaService {
     WaUser getWaUser(String pid);
 
     /**
-     * 批量保存考勤记录
-     * @param recordList
+     * 获取用户更新信息
+     * @param pid
+     * @return
      */
-    List<WaRecord> saveWaRecordList(WaUser user, List<WaRecord> recordList, String queryDate);
+    void saveWaUpdate(String pid);
+
+    /**
+     * 根据月份查询考勤记录
+     * @param user
+     * @param queryDate
+     * @return
+     */
+    public List<WaRecord> getWaRecordList(WaUser user, String queryDate);
+
+    /**
+     * 批量保存考勤记录
+     */
+    void saveWaRecordList(WaUser user, String queryDate) throws IOException;
 }

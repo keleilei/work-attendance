@@ -19,8 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -43,91 +46,121 @@ public class WaServiceImpl implements IWaService {
 
     public WaUser saveUser(String pid, String password){
         WaUser waUser = JYWaUtil.getJYWaUser(pid, password);
-        if(waUser != null){
-
+        if(waUser != null)
             redisDao.saveWaUser(waUser);
-
-            WaUpdate waUpdate = new WaUpdate();
-            waUpdate.setWaPid(waUser.getWaPid());
-            waUpdate.setUpdateState("1");
-            try {
-                waUpdate.setLastUpdateDate(DateUtils.parseDate("2014-04-25","yyyy-MM-dd"));
-            } catch (ParseException e) {
-            }
-            redisDao.saveWaUpdate(waUpdate);
-        }
         return waUser;
     }
 
-    public List<WaRecord> saveWaRecordList(WaUser user, List<WaRecord> recordList, String queryDate){
-        List<WaRecord> localRecordList = mongoDao.queryRecordListByMonth(user, queryDate);
-        // 本地没有记录，则保存全部精友记录
-        // 本地有记录，则比对记录，保存本地没有的记录
-        if(localRecordList != null && !localRecordList.isEmpty()){
-            recordList = getUnsavedRecordList(recordList, localRecordList);
+    public void saveWaUpdate(String pid){
+        WaUpdate waUpdate = new WaUpdate();
+        waUpdate.setWaPid(pid);
+        waUpdate.setUpdateState("1");
+        try {
+            waUpdate.setLastUpdateDate(DateUtils.parseDate("2014-04-25","yyyy-MM-dd"));
+        } catch (ParseException e) {
         }
-        if(!recordList.isEmpty()){
+        redisDao.saveWaUpdate(waUpdate);
+    }
+
+    public List<WaRecord> getWaRecordList(WaUser user, String queryDate){
+        return mongoDao.queryRecordListByMonth(user, queryDate);
+    }
+
+    public void saveWaRecordList(WaUser user, String queryDate) throws IOException {
+        WaUpdate update = redisDao.getWaUpdate(user.getWaPid());
+        if("0".equals(update.getUpdateState())){//数据正在更新时，不在进行操作
+            return;
+        }
+        //将更新表的状态置为更新中
+        update.setUpdateState("0");
+        redisDao.saveWaUpdate(update);
+
+        Date queryStartDate;
+        Date queryEndDate;
+        boolean threadSaveFlag = false; //开启线程保存历史考勤记录
+        //如果当前月的第一天大于最后更新日期 只查询当前月的考勤记录
+        //否则查询当前日期到最后更新日期之间的考勤记录
+        //2016-10-28 2016-09-01
+        //2016-08-01 2016-09-01
+        if(update.getLastUpdateDate().getTime() < WaUtil.getStartDateOfMonth(queryDate).getTime()){
+            queryStartDate = WaUtil.getStartDateOfMonth(queryDate);
+            queryEndDate = WaUtil.getEndDateOfMonth(queryDate);
+            threadSaveFlag = true;
+        }else{
+            queryStartDate = update.getLastUpdateDate();
+            queryEndDate = WaUtil.getCurrentDay();
+        }
+        log.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~首次保存~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        saveWaRecordList(user, queryStartDate, queryEndDate);
+
+        if(threadSaveFlag){
+            new Thread(() -> {
+                try {
+                    log.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~线程保存~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    saveWaRecordList(user, update.getLastUpdateDate(), DateUtils.addDays(queryStartDate, -1));
+                    update.setLastUpdateDate(WaUtil.getCurrentDay());
+                    update.setUpdateState("1");
+                    redisDao.saveWaUpdate(update);
+                } catch (IOException e) {
+                    log.error("线程保存考勤记录失败！", e);
+                }
+            }).start();
+        }else{
+            update.setLastUpdateDate(WaUtil.getCurrentDay());
+            update.setUpdateState("1");
+            redisDao.saveWaUpdate(update);
+        }
+
+    }
+
+    private void saveWaRecordList(WaUser user, Date queryStartDate, Date queryEndDate) throws IOException {
+        log.info("=========================================================================");
+        log.info("*************保存" + DateFormatUtils.format(queryStartDate, "yyyy-MM-dd") + "到" +
+                DateFormatUtils.format(queryEndDate, "yyyy-MM-dd") + "之间的考勤记录！*************");
+        //从精友考勤系统获取考勤记录
+        List<WaRecord> jyRecordList = JYWaUtil.getJYWaRecordList(user, queryStartDate, queryEndDate);
+        log.info("*************从精友考勤网站查到记录" + jyRecordList.size() + "条*************");
+        log.info("=========================================================================");
+        if(!jyRecordList.isEmpty()){
+
+            //起始查询日期的考勤记录有可能不完整，直接删除
+            String updateDateStr = DateFormatUtils.format(queryStartDate, "yyyy-MM-dd");
+            mongoDao.removeRecordListByDay(user, updateDateStr);
+
             //处理考勤数据
-            recordList = handleRecordList(user, recordList, queryDate);
+            jyRecordList = handleRecordList(user, jyRecordList, queryStartDate, queryEndDate);
+
             //将处理过的考勤数据入库
-            mongoDao.saveRecordList(recordList);
-            //返回查询结果
-            return mongoDao.queryRecordListByMonth(user, queryDate);
+            mongoDao.saveRecordList(jyRecordList);
         }
-        return localRecordList;
     }
 
-    /**
-     * 如果本地记录和精友考勤记录的数量不同，则返回本地没有的记录
-     * @return
-     */
-    private List<WaRecord> getUnsavedRecordList(List<WaRecord> jyRecordList, List<WaRecord> localRecordList){
-        Set<String> set = new HashSet<>();
-        List<WaRecord> unsavedRecordList = new ArrayList<>();
-        for(WaRecord record : localRecordList){
-            set.add(record.toString());
-        }
-        for(WaRecord record : jyRecordList){
-            boolean isRepeat = set.add(record.toString());
-            if(isRepeat){
-                unsavedRecordList.add(record);
-            }
-        }
-        return unsavedRecordList;
-    }
-
-    private List<WaRecord> handleRecordList(WaUser user, List<WaRecord> recordList, String queryDate){
+    private List<WaRecord> handleRecordList(WaUser user, List<WaRecord> recordList, Date queryStartDate, Date queryEndDate){
         List<WaRecord> handledRecordList = new ArrayList<>();
-        String year = queryDate.substring(0,4);
 
-        //从库中查询假日记录
-        List<Holiday> holidayList = mongoDao.queryHolidayListByYear(year);
-        //如果没有查询到，则从API获取记录并保存到库里，然后重新查询
-        if(holidayList == null || holidayList.isEmpty()){
-            mongoDao.saveHolidayList(HolidayUtil.getHolidayListByYear(year));
-            holidayList = mongoDao.queryHolidayListByYear(year);
-        }
+        //获取节假日列表
+        List<Holiday> holidayList = getHolidayList(queryStartDate, queryEndDate);
 
         //将假日记录转换为map，key为日期，value为假日状态
         Map<String, String> holidayMap = WaUtil.holidayListToMap(holidayList);
         //将考勤记录按天分组，key为日期，value为当前日期的考勤列表
         Map<String, List<WaRecord>> recordMap = WaUtil.sortRecordByDay(recordList);
         //获取查询月份的所有日期列表
-        List<String> dateRangeList = WaUtil.getDateRangeByMonth(queryDate);
+        List<String> dateRangeList = WaUtil.getDateRange(queryStartDate, queryEndDate);
 
         for(String dateStr : dateRangeList){
             try {
-                Date currentDate = DateUtils.parseDate(dateStr, "yyyy-MM-dd");
+                Date date = DateUtils.parseDate(dateStr, "yyyy-MM-dd");
                 //如果循环日期大于当前日期，则跳出循环
-                if(currentDate.getTime() > new Date().getTime()){
+                if(date.getTime() > WaUtil.getCurrentDay().getTime()){
                     return handledRecordList;
                 }
-                String holidayStatus = holidayMap.get(dateStr);
 
+                String holidayStatus = holidayMap.get(dateStr);//假期标志 1：放假，2：补休
                 boolean workFlag;//工作标志  true:工作日，false:假期
-                if(!StringUtils.isEmpty(holidayStatus)){
+                if(!StringUtils.isEmpty(holidayStatus))
                     workFlag = !"1".equals(holidayStatus);
-                }else
+                else
                     workFlag = !WaUtil.isWeekend(dateStr);
 
                 //根据每天的记录数和时间来设置考勤状态
@@ -136,14 +169,14 @@ public class WaServiceImpl implements IWaService {
                     if(dayRecordList == null || dayRecordList.isEmpty()){//工作日没有记录，增加旷工记录
                         WaRecord record = new WaRecord();
                         record.setWaPid(user.getWaPid());
-                        record.setWaDate(currentDate);
+                        record.setWaDate(date);
                         record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
                         record.setWaState(WaDict.RECORD_STATE_ABSENTEEISM);
                         handledRecordList.add(record);
                     }else{
                         if(dayRecordList.size() == 1){
                             WaRecord record  = dayRecordList.get(0);
-                            boolean isToday = dateStr.equals(DateFormatUtils.format(new Date(), "yyyy-MM-dd"));
+                            boolean isToday = dateStr.equals(WaUtil.getCurrentDayStr());
                             WaRecord addRecord = new WaRecord();
                             addRecord.setWaPid(user.getWaPid());
                             addRecord.setWaWeek(record.getWaWeek());
@@ -215,6 +248,34 @@ public class WaServiceImpl implements IWaService {
             record.setWaType("下班签退");
         }
         return record;
+    }
+
+    /**
+     * 获取假日列表
+     * @param queryStartDate
+     * @param queryEndDate
+     * @return
+     */
+    private List<Holiday> getHolidayList(Date queryStartDate, Date queryEndDate){
+        List<Holiday> holidayList = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(queryStartDate);
+        int startYear = calendar.get(Calendar.YEAR);
+        calendar.setTime(queryEndDate);
+        int endYear = calendar.get(Calendar.YEAR);
+        for(int i = startYear; i <= endYear; i++){
+            String year = String.valueOf(i);
+            //从库中查询假日记录
+            List<Holiday> yearHolidayList = mongoDao.queryHolidayListByYear(year);
+            //如果没有查询到，则从API获取记录并保存到库里，然后重新查询
+            if(yearHolidayList == null || yearHolidayList.isEmpty()){
+                yearHolidayList = HolidayUtil.getHolidayListByYear(year);
+                mongoDao.saveHolidayList(yearHolidayList);
+            }
+            holidayList.addAll(yearHolidayList);
+        }
+
+        return holidayList;
     }
 
 }

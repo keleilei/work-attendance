@@ -89,31 +89,24 @@ public class WaUtil {
      * @throws Exception
      */
     public static List<String> getDateRangeByMonth(String month){
-        return getDateRange(getStartDateOfMonthStr(month), getEndDateOfMonthStr(month));
+        return getDateRange(getStartDateOfMonth(month), getEndDateOfMonth(month));
     }
 
     /**
      * 获取给定两个日期之前的区间日期列表
-     * @param fromDateStr
-     * @param toDateStr
+     * @param fromDate
+     * @param toDate
      * @return
      * @throws Exception
      */
-    public static List<String> getDateRange(String fromDateStr, String toDateStr){
+    public static List<String> getDateRange(Date fromDate, Date toDate){
         List<String> rangeList = new ArrayList<String>();
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date fromDate = sdf.parse(fromDateStr);
-            Date toDate = sdf.parse(toDateStr);
-            GregorianCalendar gc=new GregorianCalendar();
-            gc.setTime(fromDate);
-            while(gc.getTime().getTime() <= toDate.getTime()){
-                String tmpDate = sdf.format(gc.getTime());
-                rangeList.add(tmpDate);
-                gc.add(GregorianCalendar.DAY_OF_MONTH, 1);
-            }
-        }catch (Exception e){
-            logger.error("获取日期敬意失败！", e);
+        GregorianCalendar gc=new GregorianCalendar();
+        gc.setTime(fromDate);
+        while(gc.getTime().getTime() <= toDate.getTime()){
+            String tmpDate = DateFormatUtils.format(gc.getTime(), "yyyy-MM-dd");
+            rangeList.add(tmpDate);
+            gc.add(GregorianCalendar.DAY_OF_MONTH, 1);
         }
         return rangeList;
     }
@@ -185,6 +178,22 @@ public class WaUtil {
     public static boolean isAfternoon(Date date) throws ParseException {
         String standardDate = DateFormatUtils.format(date, "yyyy-MM-dd") + " 13:00:00";
         return date.getTime() > DateUtils.parseDate(standardDate, "yyyy-MM-dd HH:mm:ss").getTime();
+    }
+
+    /**
+     * 返回当前日期字符串
+     * @return
+     */
+    public static String getCurrentDayStr(){
+        return DateFormatUtils.format(new Date(), "yyyy-MM-dd");
+    }
+
+    /**
+     * 返回当前日期字符串
+     * @return
+     */
+    public static Date getCurrentDay(){
+        return new Date();
     }
 
 }

@@ -26,6 +26,13 @@ public interface IWaMongoDao {
     List<WaRecord> queryRecordListByMonth(WaUser user, String queryDate);
 
     /**
+     * 根据日期删除考勤记录
+     * @param user
+     * @param queryDate
+     */
+    void removeRecordListByDay(WaUser user, String queryDate);
+
+    /**
      * 保存节假日
      * @param holidayList
      */

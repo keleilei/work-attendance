@@ -21,6 +21,7 @@ import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,34 +95,6 @@ public class JYWaUtil {
     /**
      * 获取考勤记录
      * @param waUser 用户
-     * @param month yyyy-MM
-     * @return
-     */
-    public static List<WaRecord> getJYWaRecordList(WaUser waUser, String month) throws ConnectException {
-        List<WaRecord> recordList = null;
-        boolean retry = true;
-        int retryCount = 0;
-        while (retry){
-            try {
-                if(retryCount == 10){
-                    break;
-                }
-                recordList = getJYWaRecordList(waUser, WaUtil.getStartDateOfMonth(month), WaUtil.getEndDateOfMonth(month));
-                retry = false;
-                retryCount++;
-            } catch (Exception e) {
-                retry = true;
-            }
-        }
-        if(retry){
-            throw new ConnectException("接连精友考勤网站失败！");
-        }
-        return recordList;
-    }
-
-    /**
-     * 获取考勤记录
-     * @param waUser 用户
      * @param startDate 开始日期
      * @param endDate 结束日期
      * @return
@@ -137,9 +110,25 @@ public class JYWaUtil {
             cookieValue = c.getValue();
         }
         int pageNum = 1;
-        int pageCount;
+        int pageCount = 0;
         do{
-            pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum, startDate, endDate, recordList);
+            boolean retry = true;
+            int retryCount = 0;
+            while (retry){
+                try {
+                    if(retryCount == 10){
+                        break;
+                    }
+                    pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum, startDate, endDate, recordList);
+                    retry = false;
+                    retryCount++;
+                } catch (Exception e) {
+                    retry = true;
+                }
+            }
+            if(retry){
+                throw new ConnectException("接连精友考勤网站失败！");
+            }
             pageNum++;
         }while (pageNum <= pageCount);
         return recordList;
@@ -169,13 +158,13 @@ public class JYWaUtil {
         String tmpScrpit = script.substring(script.indexOf("page_number_emp"));
         String pageNumber = tmpScrpit.substring(0, tmpScrpit.indexOf(";")).replace("page_number_emp=", "");
 
-        for(int i = 0; i < rows.size(); i++){
-            Elements cols = rows.get(i).getElementsByTag("td");
+        for (Element row : rows) {
+            Elements cols = row.getElementsByTag("td");
             WaRecord record = new WaRecord();
             record.setWaPid(waUser.getWaPid());
             record.setWaState(WaDict.RECORD_STATE_INVALID);//默认无效记录
             try {
-                record.setWaDate(DateUtils.parseDate(cols.get(1).text(),"yyyy-MM-dd HH:mm:ss"));
+                record.setWaDate(DateUtils.parseDate(cols.get(1).text(), "yyyy-MM-dd HH:mm:ss"));
                 record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
             } catch (ParseException e) {
                 logger.error("解析日期出错！", e);
@@ -200,7 +189,7 @@ public class JYWaUtil {
         try {
             HttpPost login = new HttpPost(url);
             login.addHeader("X-Requested-With", "XMLHttpRequest");
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            List<NameValuePair> nvps = new ArrayList<>();
             nvps.add(new BasicNameValuePair("username", pid));
             nvps.add(new BasicNameValuePair("password", password));
             login.setEntity(new UrlEncodedFormEntity(nvps, HTTP.DEF_CONTENT_CHARSET));

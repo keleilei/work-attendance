@@ -36,7 +36,7 @@ public class HolidayUtil {
     public static List<Holiday> getHolidayListByYear(String year){
         List<Holiday> holidayList = new ArrayList<>();
         if(StringUtils.isEmpty(year)){
-            year = DateFormatUtils.format(new Date(), "yyyy");
+            year = DateFormatUtils.format(WaUtil.getCurrentDay(), "yyyy");
         }
         year += "年";
         for(int i = 1; i < 11; i++){

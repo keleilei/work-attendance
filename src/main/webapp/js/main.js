@@ -6,10 +6,28 @@ $(function(){
     addYearOption();
     addMonthOption();
     addCheckbox();
-    initRecordTable();
+    initData();
 });
 
-function initRecordTable(){
+function initData(){
+    updateData();
+    loadData();
+}
+
+function updateData(){
+    $.ajax({
+        url : "rest/data/update",
+        method : "get",
+        dataType : "json",
+        async: false
+    }).done(function (pageData) {
+        console.log(pageData);
+    }).fail(function (xhr, msg) {
+        console.log(msg);
+    });
+}
+
+function loadData(){
     $.ajax({
         url : "rest/data/month",
         method : "get",

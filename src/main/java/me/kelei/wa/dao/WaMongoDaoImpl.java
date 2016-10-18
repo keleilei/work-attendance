@@ -38,6 +38,11 @@ public class WaMongoDaoImpl implements IWaMongoDao {
                 and("waPid").is(user.getWaPid())), WaRecord.class);
     }
 
+    public void removeRecordListByDay(WaUser user, String queryDate){
+        operations.remove(query(where("waDate").regex("/^"+queryDate+"/").
+                and("waPid").is(user.getWaPid())), WaRecord.class);
+    }
+
     public void saveHolidayList(List<Holiday> holidayList){
         if(holidayList != null && !holidayList.isEmpty())
             operations.insert(holidayList, Holiday.class);

@@ -18,5 +18,6 @@ public interface WaDict {
     //请求数据状态
     String REQUEST_STATE_SUCCESS = "0";
     String REQUEST_STATE_FAIL = "1";
+    String REQUEST_STATE_EMPTY = "2";
 
 }
