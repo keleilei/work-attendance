@@ -1,6 +1,7 @@
 package me.kelei.wa.rest;
 
 import com.alibaba.fastjson.JSON;
+import me.kelei.wa.entities.Holiday;
 import me.kelei.wa.entities.WaRecord;
 import me.kelei.wa.entities.WaUser;
 import me.kelei.wa.services.IWaService;
@@ -52,13 +53,15 @@ public class WaData {
 
         //查询考勤记录
         List<WaRecord> recordList = ijyWaDataService.getWaRecordList(user, queryDate);
+        //查询节假日
+        List<Holiday> holidayList = ijyWaDataService.getHolidayList(queryDate);
 
         if(recordList == null && recordList.isEmpty()){
             page.setStatus(WaDict.REQUEST_STATE_EMPTY);
         }
 
         page.setRecordList(recordList);
-
+        page.setHolidayList(holidayList);
         return JSON.toJSONString(page);
     }
 

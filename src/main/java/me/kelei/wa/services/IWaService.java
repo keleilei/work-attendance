@@ -1,5 +1,6 @@
 package me.kelei.wa.services;
 
+import me.kelei.wa.entities.Holiday;
 import me.kelei.wa.entities.WaRecord;
 import me.kelei.wa.entities.WaUpdate;
 import me.kelei.wa.entities.WaUser;
@@ -43,6 +44,13 @@ public interface IWaService {
      * @return
      */
     public List<WaRecord> getWaRecordList(WaUser user, String queryDate);
+
+    /**
+     * 根据月份查询节假日
+     * @param queryDate
+     * @return
+     */
+    public List<Holiday> getHolidayList(String queryDate);
 
     /**
      * 批量保存考勤记录

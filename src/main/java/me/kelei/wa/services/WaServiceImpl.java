@@ -1,6 +1,5 @@
 package me.kelei.wa.services;
 
-import com.alibaba.fastjson.JSON;
 import me.kelei.wa.dao.IWaMongoDao;
 import me.kelei.wa.dao.IWaRedisDao;
 import me.kelei.wa.entities.Holiday;
@@ -20,10 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -66,14 +63,30 @@ public class WaServiceImpl implements IWaService {
         return mongoDao.queryRecordListByMonth(user, queryDate);
     }
 
+    public List<Holiday> getHolidayList(String queryDate){
+        List<Holiday> holidayList = mongoDao.queryHolidayListByMonth(queryDate);
+        if(holidayList != null && !holidayList.isEmpty()){
+            //只需要节日名称和描述
+            Map<String, String> holidayMap = new HashMap<>();
+            holidayList.forEach(holiday ->{
+                holidayMap.put(holiday.getHolidayName(), holiday.getHolidayDesc());
+            });
+            holidayList.clear();
+            holidayMap.forEach((k, v) ->{
+                Holiday holiday = new Holiday();
+                holiday.setHolidayName(k);
+                holiday.setHolidayDesc(v);
+                holidayList.add(holiday);
+            });
+        }
+        return holidayList;
+    }
+
     public void saveWaRecordList(WaUser user, String queryDate) throws IOException {
         WaUpdate update = redisDao.getWaUpdate(user.getWaPid());
         if("0".equals(update.getUpdateState())){//数据正在更新时，不在进行操作
             return;
         }
-        //将更新表的状态置为更新中
-        update.setUpdateState("0");
-        redisDao.saveWaUpdate(update);
 
         Date queryStartDate;
         Date queryEndDate;
@@ -81,23 +94,33 @@ public class WaServiceImpl implements IWaService {
         //如果当前月的第一天大于最后更新日期 只查询当前月的考勤记录
         //否则查询当前日期到最后更新日期之间的考勤记录
         //2016-10-28 2016-09-01
-        //2016-08-01 2016-09-01
+        //2016-08-01 2016-10-01
         if(update.getLastUpdateDate().getTime() < WaUtil.getStartDateOfMonth(queryDate).getTime()){
             queryStartDate = WaUtil.getStartDateOfMonth(queryDate);
             queryEndDate = WaUtil.getEndDateOfMonth(queryDate);
             threadSaveFlag = true;
         }else{
+            //
+            if(!DateFormatUtils.format(update.getLastUpdateDate(), "yyyy-MM").equals(queryDate)){
+                return;
+            }
             queryStartDate = update.getLastUpdateDate();
             queryEndDate = WaUtil.getCurrentDay();
         }
-        log.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~首次保存~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        saveWaRecordList(user, queryStartDate, queryEndDate);
 
+        //将更新表的状态置为更新中
+        update.setUpdateState("0");
+        redisDao.saveWaUpdate(update);
+
+        log.info("==============================普通保存==============================");
+        saveWaRecordList(user, queryStartDate, queryEndDate);
+        log.info("===================================================================");
         if(threadSaveFlag){
             new Thread(() -> {
                 try {
-                    log.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~线程保存~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    log.info("==============================线程保存==============================");
                     saveWaRecordList(user, update.getLastUpdateDate(), DateUtils.addDays(queryStartDate, -1));
+                    log.info("===================================================================");
                     update.setLastUpdateDate(WaUtil.getCurrentDay());
                     update.setUpdateState("1");
                     redisDao.saveWaUpdate(update);
@@ -114,13 +137,11 @@ public class WaServiceImpl implements IWaService {
     }
 
     private void saveWaRecordList(WaUser user, Date queryStartDate, Date queryEndDate) throws IOException {
-        log.info("=========================================================================");
         log.info("*************保存" + DateFormatUtils.format(queryStartDate, "yyyy-MM-dd") + "到" +
                 DateFormatUtils.format(queryEndDate, "yyyy-MM-dd") + "之间的考勤记录！*************");
         //从精友考勤系统获取考勤记录
         List<WaRecord> jyRecordList = JYWaUtil.getJYWaRecordList(user, queryStartDate, queryEndDate);
         log.info("*************从精友考勤网站查到记录" + jyRecordList.size() + "条*************");
-        log.info("=========================================================================");
         if(!jyRecordList.isEmpty()){
 
             //起始查询日期的考勤记录有可能不完整，直接删除

@@ -16,7 +16,7 @@ function initData(){
 
 function updateData(){
     $.ajax({
-        url : "rest/data/update",
+        url : "rest/data/update?_=" + new Date().getTime(),
         method : "get",
         dataType : "json",
         async: false
@@ -27,9 +27,9 @@ function updateData(){
     });
 }
 
-function loadData(){
+function loadData(qdate){
     $.ajax({
-        url : "rest/data/month",
+        url : "rest/data/month?qdate=" + (qdate ? qdate : "") + "&_=" + new Date().getTime(),
         method : "get",
         dataType : "json"
     }).done(function (pageData) {
@@ -44,33 +44,31 @@ function fillTable(pageData){
     var $tbody = $("#record-table").find("tbody");
     if(status == "1"){
         $tbody.find("td").html("从精友考勤网站获取数据失败，请刷新页面！");
+    }else if(status == "2"){
+        $tbody.find("td").html("未查找到考勤记录！");
     }else{
         var recordList = pageData.recordList;
         $("input[name='record-size']").val(recordList.length);
-        if(!recordList || recordList.length == 0){
-            $tbody.find("td").html("未查找到考勤记录！");
-        }else{
-            var html = "";
-            for(var i = 0; i < recordList.length; i++){
-                var waState = recordList[i].waState;
-                var cssclass = "";
-                if(waState == "0")
-                    cssclass = "hidden";
-                else if(waState == "5")
-                    cssclass = "positive";
-                else if(waState != "1")
-                    cssclass = "negative";
-                html += "<tr class='" + cssclass + "'>";
-                html += "<td>" + parseDefaultValue(recordList[i].waDate) + "</td>";
-                html += "<td>" + parseDefaultValue(recordList[i].waWeek) + "</td>";
-                html += "<td>" + parseDefaultValue(recordList[i].waType) + "</td>";
-                html += "<td>" + parseDefaultValue(recordList[i].waValidateWay) + "</td>";
-                html += "<td>" + parseDefaultValue(recordList[i].waDevice) + "</td>";
-                html += "<td>" + getStateName(recordList[i].waState) + "</td>";
-                html += "</tr>";
-            }
-            $tbody.html(html);
+        var html = "";
+        for(var i = 0; i < recordList.length; i++){
+            var waState = recordList[i].waState;
+            var cssclass = "";
+            if(waState == "0")
+                cssclass = "hidden";
+            else if(waState == "5")
+                cssclass = "positive";
+            else if(waState != "1")
+                cssclass = "negative";
+            html += "<tr class='" + cssclass + "'>";
+            html += "<td>" + parseDefaultValue(recordList[i].waDate) + "</td>";
+            html += "<td>" + parseDefaultValue(recordList[i].waWeek) + "</td>";
+            html += "<td>" + parseDefaultValue(recordList[i].waType) + "</td>";
+            html += "<td>" + parseDefaultValue(recordList[i].waValidateWay) + "</td>";
+            html += "<td>" + parseDefaultValue(recordList[i].waDevice) + "</td>";
+            html += "<td>" + getStateName(recordList[i].waState) + "</td>";
+            html += "</tr>";
         }
+        $tbody.html(html);
     }
 }
 
@@ -102,8 +100,7 @@ function addYearOption(){
     }
     $("#year").html(option).dropdown({
         onChange: function(value, text, $selectedItem) {
-            console.log(value + "     " + text);
-            dropdownChangeEvent();
+            dropdownChangeEvent(value, 1);
         }
     });
 }
@@ -116,13 +113,22 @@ function addMonthOption(){
     }
     $("#month").html(option).dropdown({
         onChange: function(value, text, $selectedItem) {
-            dropdownChangeEvent();
+            dropdownChangeEvent(value, 2);
         }
     });
 }
 
-function dropdownChangeEvent(){
-
+function dropdownChangeEvent(value, flag){
+    var year,month;
+    if(flag == 1){
+        year = value;
+        month = $("#month").closest(".dropdown").find(".selected").attr("data-value");
+    }else{
+        year = $("#year").closest(".dropdown").find(".selected").attr("data-value");
+        month = value;
+    }
+    $(".ui.checkbox").checkbox("set unchecked");
+    loadData(year + "-" + month);
 }
 
 function addCheckbox(){

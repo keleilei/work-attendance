@@ -45,4 +45,11 @@ public interface IWaMongoDao {
      */
     List<Holiday> queryHolidayListByYear(String year);
 
+    /**
+     * 根据月份查询节假日
+     * @param month
+     * @return
+     */
+    List<Holiday> queryHolidayListByMonth(String month);
+
 }
