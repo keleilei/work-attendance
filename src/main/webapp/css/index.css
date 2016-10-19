@@ -9,6 +9,7 @@
 
 .container{
     padding-top: 65px;
+    padding-bottom: 50px;
 }
 
 .wa-holiday{
@@ -85,4 +86,8 @@
 
 .ui.table .hidden{
     display: none;
+}
+
+.list .description{
+    margin-top: 5px;
 }

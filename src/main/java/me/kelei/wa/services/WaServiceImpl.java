@@ -55,6 +55,7 @@ public class WaServiceImpl implements IWaService {
         try {
             waUpdate.setLastUpdateDate(DateUtils.parseDate("2014-04-25","yyyy-MM-dd"));
         } catch (ParseException e) {
+            log.error("出问题我把代码吃了！", e);
         }
         redisDao.saveWaUpdate(waUpdate);
     }
@@ -68,9 +69,7 @@ public class WaServiceImpl implements IWaService {
         if(holidayList != null && !holidayList.isEmpty()){
             //只需要节日名称和描述
             Map<String, String> holidayMap = new HashMap<>();
-            holidayList.forEach(holiday ->{
-                holidayMap.put(holiday.getHolidayName(), holiday.getHolidayDesc());
-            });
+            holidayList.forEach(holiday -> holidayMap.put(holiday.getHolidayName(), holiday.getHolidayDesc()));
             holidayList.clear();
             holidayMap.forEach((k, v) ->{
                 Holiday holiday = new Holiday();
@@ -93,14 +92,12 @@ public class WaServiceImpl implements IWaService {
         boolean threadSaveFlag = false; //开启线程保存历史考勤记录
         //如果当前月的第一天大于最后更新日期 只查询当前月的考勤记录
         //否则查询当前日期到最后更新日期之间的考勤记录
-        //2016-10-28 2016-09-01
-        //2016-08-01 2016-10-01
         if(update.getLastUpdateDate().getTime() < WaUtil.getStartDateOfMonth(queryDate).getTime()){
             queryStartDate = WaUtil.getStartDateOfMonth(queryDate);
             queryEndDate = WaUtil.getEndDateOfMonth(queryDate);
             threadSaveFlag = true;
         }else{
-            //
+            //如果查询的不是当前月的考勤记录，则不用更新数据
             if(!DateFormatUtils.format(update.getLastUpdateDate(), "yyyy-MM").equals(queryDate)){
                 return;
             }
@@ -251,9 +248,8 @@ public class WaServiceImpl implements IWaService {
      * 根据记录的时间设置记录状态
      * @param record 记录
      * @param flag 0：早上签到，1：晚上签退
-     * @return
      */
-    private WaRecord setRecordState(WaRecord record, int flag) throws ParseException{
+    private void setRecordState(WaRecord record, int flag) throws ParseException{
         //签到
         if(flag == 0){
             if(WaUtil.isLate(record.getWaDate()))
@@ -268,14 +264,13 @@ public class WaServiceImpl implements IWaService {
                 record.setWaState(WaDict.RECORD_STATE_NORMAL);
             record.setWaType("下班签退");
         }
-        return record;
     }
 
     /**
      * 获取假日列表
-     * @param queryStartDate
-     * @param queryEndDate
-     * @return
+     * @param queryStartDate 起始日期
+     * @param queryEndDate 结束日期
+     * @return 区间节假日列表
      */
     private List<Holiday> getHolidayList(Date queryStartDate, Date queryEndDate){
         List<Holiday> holidayList = new ArrayList<>();

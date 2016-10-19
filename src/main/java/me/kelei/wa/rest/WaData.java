@@ -56,7 +56,7 @@ public class WaData {
         //查询节假日
         List<Holiday> holidayList = ijyWaDataService.getHolidayList(queryDate);
 
-        if(recordList == null && recordList.isEmpty()){
+        if(recordList == null || recordList.isEmpty()){
             page.setStatus(WaDict.REQUEST_STATE_EMPTY);
         }
 

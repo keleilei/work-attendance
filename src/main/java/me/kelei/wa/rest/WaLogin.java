@@ -37,11 +37,13 @@ public class WaLogin {
         if(waUser == null){
             //保存用户
             waUser = ijyWaDataService.saveUser(pid, password);
-            //保存用户更新信息
-            ijyWaDataService.saveWaUpdate(pid);
         }
         boolean isValidate = false;
+
         if(waUser != null){
+            //保存用户更新信息
+            ijyWaDataService.saveWaUpdate(pid);
+
             isValidate = true;
             request.getSession().setAttribute("waUser", waUser);
         }

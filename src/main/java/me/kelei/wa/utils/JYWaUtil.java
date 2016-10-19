@@ -11,10 +11,12 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
@@ -53,11 +55,11 @@ public class JYWaUtil {
      */
     public static WaUser getJYWaUser(String pid, String password){
         WaUser waUser = null;
-        HttpClient client = jyWaLogin(pid, password);
+        CloseableHttpClient client = jyWaLogin(pid, password);
+        CloseableHttpResponse response = null;
         try{
             HttpGet get = new HttpGet("http://124.42.1.13:8000/iclock/staff/");
-            HttpResponse response = client.execute(get);
-
+            response = client.execute(get);
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
@@ -88,6 +90,15 @@ public class JYWaUtil {
             }
         }catch (Exception e){
             logger.error("获取精友考勤用户信息失败！", e);
+        }finally {
+            try {
+                if(client != null)
+                    client.close();
+                if(response != null)
+                    response.close();;
+            } catch (IOException e) {
+                logger.error("关闭httpclient连接失败！", e);
+            }
         }
         return waUser;
     }
@@ -101,7 +112,7 @@ public class JYWaUtil {
      */
     public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate, Date endDate) throws IOException {
         List<WaRecord> recordList = new ArrayList<>();
-        jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd());
+        jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd()).close();
         List<Cookie> cookies =httpCookieStore.getCookies();
         String cookieName = "";
         String cookieValue = "";
@@ -131,6 +142,8 @@ public class JYWaUtil {
             }
             pageNum++;
         }while (pageNum <= pageCount);
+        //清Cookie
+        httpCookieStore.clear();
         return recordList;
     }
 
@@ -183,9 +196,9 @@ public class JYWaUtil {
      * @param password   用户密码
      * @return httpclient
      */
-    private static HttpClient jyWaLogin(String pid, String password){
+    private static CloseableHttpClient jyWaLogin(String pid, String password){
         String url = "http://124.42.1.13:8000/iclock/accounts/login/";
-        HttpClient client = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore).build();
+        CloseableHttpClient client = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore).build();
         try {
             HttpPost login = new HttpPost(url);
             login.addHeader("X-Requested-With", "XMLHttpRequest");
