@@ -9,7 +9,12 @@
 
 .banner .wa-logo-area{
     float: left;
-    height: 100%;
+}
+
+.banner .wa-logo-area .logo{
+    background: url("../image/white_logo.png") no-repeat center / 55px 50px;
+    width: 200px;
+    height: 50px;
 }
 
 .banner .wa-user-area{
@@ -23,8 +28,11 @@
     line-height: 50px;
 }
 
-.banner .wa-user-area .icon{
-    margin-left: 10px;
+.banner .wa-user-area .user-name{
+    margin-right: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 5px;
 }
 
 .container{

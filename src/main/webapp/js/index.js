@@ -32,7 +32,7 @@ function initTip(){
     });
 
     $(".wa-user-area .share.icon").popup().click(function(){
-
+        window.open("http://124.42.1.13:8000/iclock/accounts/login/");
     });
 }
 
