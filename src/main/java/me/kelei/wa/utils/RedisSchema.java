@@ -12,6 +12,4 @@ public class RedisSchema {
     //更新表
     public static final String SCHEMA_UPDATE = "waupdate:";
 
-    //记录表
-    public static final String SCHEMA_RECORD = "warecord:";
 }

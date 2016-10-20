@@ -3,11 +3,38 @@
  * Created by kelei on 2016/9/26.
  */
 $(function(){
+    getUser();
+    initTip();
     addYearOption();
     addMonthOption();
     addCheckbox();
     initData();
 });
+
+function getUser() {
+    $.ajax({
+        url : "rest/login/user?_=" + new Date().getTime(),
+        method : "get",
+        dataType : "json"
+    }).done(function (user) {
+        $(".user-name").text(user.waUserName);
+    });
+}
+
+function initTip(){
+    $(".wa-user-area .sign.icon").popup().click(function(){
+        $.ajax({
+            url : "rest/login/logout?_=" + new Date().getTime(),
+            method : "get"
+        }).done(function () {
+            window.location.reload();
+        });
+    });
+
+    $(".wa-user-area .share.icon").popup().click(function(){
+
+    });
+}
 
 var isComplete = false;
 var intervalNum;
@@ -97,7 +124,7 @@ function fillHoliday(pageData){
 
 function fillAanalysis(){
     var $tbody = $("#record-table").find("tbody");
-    var lateCount, earlyCount, forgetCount, absenteeismCount, overtimeCount;
+    var lateCount = 0, earlyCount = 0, forgetCount = 0, absenteeismCount = 0, overtimeCount = 0;
     var lateTip, earlyTip, forgetTip, absenteeismTip, overtimeTip;
     $tbody.find("tr:visible").each(function(){
         var state = $(this).find("input[name='wastate']").val();
@@ -109,28 +136,40 @@ function fillAanalysis(){
             case "6": forgetCount++;break;
         }
     });
-    if(lateCount){
+    if(lateCount > 0){
         if(lateCount > 3)
-            lateTip = "迟到" + lateCount + "次，已经超过3次了，请补" + (lateCount - 3) + "个单子吧！";
+            lateTip = "迟到<a class=\"ui mini red circular label\">" + lateCount + "</a>次，已经超过3次了，请补" + (lateCount - 3) + "个单子吧";
+        else if(lateCount == 3)
+            lateTip = "迟到<a class=\"ui mini red circular label\">" + lateCount + "</a>次，你已经没有迟到机会了";
         else
-            lateTip = "迟到" + lateCount + "次，剩下" + (3 - lateCount) + "次机会要省着点用！";
+            lateTip = "迟到<a class=\"ui mini red circular label\">" + lateCount + "</a>次，剩下" + (3 - lateCount) + "次机会要省着点用";
         $(".list .late").html(lateTip);
+    }else{
+        $(".list .late").html("迟到有3条命");
     }
-    if(earlyCount){
-        earlyTip = "早退" + earlyCount + "次，月底前记得补单子。";
+    if(earlyCount > 0){
+        earlyTip = "早退<a class=\"ui mini red circular label\">" + earlyCount + "</a>次，月底前记得补单子";
         $(".list .early").html(earlyTip);
+    }else{
+        $(".list .early").html("对你的调休说bye bye");
     }
-    if(forgetCount){
-        forgetTip = "忘打卡" + forgetCount + "次，1次1小时，1小时1次。";
+    if(forgetCount > 0){
+        forgetTip = "忘打卡<a class=\"ui mini red circular label\">" + forgetCount + "</a>次，1次1小时，1小时1次";
         $(".list .forget").html(forgetTip);
+    }else{
+        $(".list .forget").html("没的说，调休1小时");
     }
-    if(absenteeismCount){
-        absenteeismTip = "旷工" + absenteeismCount + "天，1次1小时，1小时1次。";
+    if(absenteeismCount > 0){
+        absenteeismTip = "旷工<a class=\"ui mini red circular label\">" + absenteeismCount + "</a>天，不管是请假还是外出都得填单子";
         $(".list .absenteeism").html(absenteeismTip);
+    }else{
+        $(".list .absenteeism").html("外出？请假？");
     }
-    if(overtimeCount){
-        overtimeTip = "加班" + (overtimeCount/2) + "天，自己算加了多少小时的班。";
+    if(overtimeCount > 0){
+        overtimeTip = "加班<a class=\"ui mini green circular label\">" + (overtimeCount/2) + "</a>天，加了多少小时的班自己算";
         $(".list .overtime").html(overtimeTip);
+    }else{
+        $(".list .overtime").html("又可以愉快的请请请了");
     }
 
 }

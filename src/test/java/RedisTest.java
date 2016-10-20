@@ -1,6 +1,8 @@
 import org.junit.*;
 import redis.clients.jedis.Jedis;
 
+import java.util.Set;
+
 /**
  * redis测试类
  * Created by kelei on 2016/9/22.
@@ -17,9 +19,23 @@ public class RedisTest {
 
     @Test
     public void testString(){
-        jedis.set("a","hello world!");
-        String str = jedis.get("a");
-        System.out.println(str);
+        Set<String> strs = jedis.keys("waupdate:*");
+        strs.forEach(str -> {
+            System.out.println(jedis.get(str));
+        });
+    }
+
+    @Test
+    public void removeRedisData(){
+        Set<String> keys = jedis.keys("wauser:*");
+        keys.forEach(key -> jedis.del(key));
+        keys = jedis.keys("waupdate:*");
+        keys.forEach(key -> jedis.del(key));
+    }
+
+    @After
+    public void close(){
+        jedis.close();
     }
 
 }

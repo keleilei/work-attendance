@@ -1,7 +1,9 @@
 package me.kelei.wa.rest;
 
+import com.alibaba.fastjson.JSON;
 import me.kelei.wa.entities.WaUser;
 import me.kelei.wa.services.IWaService;
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,26 +35,36 @@ public class WaLogin {
     @Path("validate")
     @Produces(MediaType.APPLICATION_JSON)
     public String validateUser(@FormParam("wapid") String pid, @FormParam("wapwd")String password){
+
         WaUser waUser = ijyWaDataService.getWaUser(pid);
+        boolean isValidate = false;
+
         if(waUser == null){
             //保存用户
             waUser = ijyWaDataService.saveUser(pid, password);
+            if(waUser != null){
+                //保存用户更新信息
+                ijyWaDataService.saveWaUpdate(pid);
+            }
+        }else{
+            //验证用户密码
+            if(!waUser.getWaUserPwd().equals(password)){
+                waUser = ijyWaDataService.saveUser(pid, password);
+            }
         }
-        boolean isValidate = false;
 
         if(waUser != null){
-            //保存用户更新信息
-            ijyWaDataService.saveWaUpdate(pid);
-
             isValidate = true;
             request.getSession().setAttribute("waUser", waUser);
+        }else{
+            request.getSession().setAttribute("waUser", null);
         }
         return "{\"isValidate\" : "+isValidate+"}";
     }
 
     @GET
     @Path("rememberMe")
-    public void rememberMeDispatcher(){
+    public String rememberMeDispatcher(){
         String pid = (String) request.getAttribute("wapid");
         WaUser user = ijyWaDataService.getWaUser(pid);
         try {
@@ -65,6 +77,31 @@ public class WaLogin {
         }catch (Exception e){
             logger.error("跳转出错！", e);
         }
+        return null;
+    }
+
+    @GET
+    @Path("/user")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String queryLoginUser() {
+        WaUser user = (WaUser) request.getSession().getAttribute("waUser");
+        WaUser clone = new WaUser();
+        if(user != null){
+            try {
+                BeanUtils.copyProperties(clone, user);
+                clone.setWaUserPwd("");
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return JSON.toJSONString(clone);
+    }
+
+    @GET
+    @Path("/logout")
+    public String logout(){
+        request.getSession().setAttribute("waUser", null);
+        return null;
     }
 
 }

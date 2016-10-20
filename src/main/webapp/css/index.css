@@ -7,6 +7,26 @@
     z-index: 1000;
 }
 
+.banner .wa-logo-area{
+    float: left;
+    height: 100%;
+}
+
+.banner .wa-user-area{
+    float: right;
+    color: #fff;
+    height: 100%;
+    width: 200px;
+}
+
+.banner .wa-user-area *{
+    line-height: 50px;
+}
+
+.banner .wa-user-area .icon{
+    margin-left: 10px;
+}
+
 .container{
     padding-top: 65px;
     padding-bottom: 50px;
@@ -24,6 +44,10 @@
     right: 10%;
     top: 10%;
     width: 20%;
+}
+
+.wa-analysis .ui.label{
+    margin: 0 5px;
 }
 
 .wa-content{
