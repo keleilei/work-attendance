@@ -146,7 +146,7 @@ public class WaUtil {
      * @return
      */
     public static boolean isWeekend(String date) throws ParseException {
-        String week = DateFormatUtils.format(DateUtils.parseDate(date, "yyyy-MM-dd"),"EEEE");
+        String week = DateFormatUtils.format(DateUtils.parseDate(date, "yyyy-MM-dd"),"EEEE", Locale.CHINA);
         return week.equals("星期六") || week.equals("星期日");
     }
 

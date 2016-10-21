@@ -37,6 +37,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 从精友考勤外网获取数据工具类
@@ -178,7 +179,7 @@ public class JYWaUtil {
             record.setWaState(WaDict.RECORD_STATE_INVALID);//默认无效记录
             try {
                 record.setWaDate(DateUtils.parseDate(cols.get(1).text(), "yyyy-MM-dd HH:mm:ss"));
-                record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
+                record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE", Locale.CHINA));
             } catch (ParseException e) {
                 logger.error("解析日期出错！", e);
             }

@@ -188,7 +188,7 @@ public class WaServiceImpl implements IWaService {
                         WaRecord record = new WaRecord();
                         record.setWaPid(user.getWaPid());
                         record.setWaDate(date);
-                        record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE"));
+                        record.setWaWeek(DateFormatUtils.format(record.getWaDate(), "EEEE", Locale.CHINA));
                         record.setWaState(WaDict.RECORD_STATE_ABSENTEEISM);
                         handledRecordList.add(record);
                     }else{
