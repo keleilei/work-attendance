@@ -54,9 +54,9 @@ public class LoginFilter implements Filter {
 
                 if("1".equals(rememberme) && !"1".equals(logoutFlag)){
                     request.setAttribute("wapid",wapid);
-                    session.setAttribute("logout", null);
                     request.getRequestDispatcher("/rest/login/rememberMe").forward(request, response);
                 }else{
+                    session.setAttribute("logout", null);
                     request.getRequestDispatcher("/page/login.html").forward(request, response);
                     return;
                 }
