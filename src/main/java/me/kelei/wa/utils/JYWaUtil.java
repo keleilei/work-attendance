@@ -72,10 +72,10 @@ public class JYWaUtil {
                         if(line.contains("uid=\"")){
                             uid = line.replaceAll("\\s", "").replace("uid=\"", "").replace("\";", "");
                         }
-                        if(line.contains("strong")){
-                            int sindex = line.indexOf("strong");
+                        if(line.contains("员工")){
+                            int sindex = line.indexOf("员工");
                             line = line.substring(sindex);
-                            name = line.substring(10, 12);
+                            name = line.substring(0, line.indexOf("<")).replace("员工 ", "");
                         }
                     }
                     br.close();

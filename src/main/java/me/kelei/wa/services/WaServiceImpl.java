@@ -192,9 +192,9 @@ public class WaServiceImpl implements IWaService {
                         record.setWaState(WaDict.RECORD_STATE_ABSENTEEISM);
                         handledRecordList.add(record);
                     }else{
+                        boolean isToday = dateStr.equals(WaUtil.getCurrentDayStr());
                         if(dayRecordList.size() == 1){
                             WaRecord record  = dayRecordList.get(0);
-                            boolean isToday = dateStr.equals(WaUtil.getCurrentDayStr());
                             WaRecord addRecord = new WaRecord();
                             addRecord.setWaPid(user.getWaPid());
                             addRecord.setWaWeek(record.getWaWeek());
@@ -219,11 +219,13 @@ public class WaServiceImpl implements IWaService {
                             }
                         }else if(dayRecordList.size() == 2){
                             setRecordState(dayRecordList.get(0), 0);
-                            setRecordState(dayRecordList.get(1), 1);
+                            if(!(isToday && WaUtil.isEarly(WaUtil.getCurrentDay())))
+                                setRecordState(dayRecordList.get(1), 1);
                             handledRecordList.addAll(dayRecordList);
                         }else{
                             setRecordState(dayRecordList.get(0), 0);
-                            setRecordState(dayRecordList.get(dayRecordList.size() - 1), 1);
+                            if(!(isToday && WaUtil.isEarly(WaUtil.getCurrentDay())))
+                                setRecordState(dayRecordList.get(dayRecordList.size() - 1), 1);
                             handledRecordList.addAll(dayRecordList);
                         }
                     }

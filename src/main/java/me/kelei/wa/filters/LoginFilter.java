@@ -30,6 +30,7 @@ public class LoginFilter implements Filter {
         HttpSession session = request.getSession();
 
         Object user = session.getAttribute("waUser");
+        String logoutFlag = (String) session.getAttribute("logout");
         Pattern pattern = Pattern.compile(regPath);
 
         if(!pattern.matcher(request.getRequestURI()).find()){
@@ -51,8 +52,9 @@ public class LoginFilter implements Filter {
                 response.setHeader("Cache-Control","no-cache");
                 response.setHeader("Pragma","no-cache");
 
-                if("1".equals(rememberme)){
+                if("1".equals(rememberme) && !"1".equals(logoutFlag)){
                     request.setAttribute("wapid",wapid);
+                    session.setAttribute("logout", null);
                     request.getRequestDispatcher("/rest/login/rememberMe").forward(request, response);
                 }else{
                     request.getRequestDispatcher("/page/login.html").forward(request, response);

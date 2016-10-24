@@ -101,6 +101,7 @@ public class WaLogin {
     @Path("/logout")
     public String logout(){
         request.getSession().setAttribute("waUser", null);
+        request.getSession().setAttribute("logout", "1");
         return null;
     }
 
