@@ -38,10 +38,16 @@ public class WaMongoDaoImpl implements IWaMongoDao {
     }
 
     public List<WaRecord> queryRecordListByMonth(WaUser user, String queryDate){
-        return operations.find(query(where("waDate").
-                gte(WaUtil.getStartDateOfMonth(queryDate)).
-                lte(WaUtil.getEndDateOfMonth(queryDate)).
-                and("waPid").is(user.getWaPid())), WaRecord.class);
+        try {
+            return operations.find(query(where("waDate").
+                    gte(WaUtil.getStartDateOfMonth(queryDate)).
+                    lte(DateUtils.parseDate(WaUtil.getEndDateOfMonthStr(queryDate)
+                            + " 23:59:59", "yyyy-MM-dd HH:mm:ss")).
+                    and("waPid").is(user.getWaPid())), WaRecord.class);
+        } catch (ParseException e) {
+            log.error("查询考勤记录时解析日期失败！", e);
+        }
+        return null;
     }
 
     public void removeRecordListByDay(WaUser user, String queryDate){

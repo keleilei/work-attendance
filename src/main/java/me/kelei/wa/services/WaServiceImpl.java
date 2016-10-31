@@ -89,12 +89,14 @@ public class WaServiceImpl implements IWaService {
 
         Date queryStartDate;
         Date queryEndDate;
+        Date threadQueryStartDate = null;
         boolean threadSaveFlag = false; //开启线程保存历史考勤记录
         //如果当前月的第一天大于最后更新日期 只查询当前月的考勤记录
         //否则查询当前日期到最后更新日期之间的考勤记录
         if(update.getLastUpdateDate().getTime() < WaUtil.getStartDateOfMonth(queryDate).getTime()){
             queryStartDate = WaUtil.getStartDateOfMonth(queryDate);
             queryEndDate = WaUtil.getEndDateOfMonth(queryDate);
+            threadQueryStartDate = update.getLastUpdateDate();
             threadSaveFlag = true;
         }else{
             //如果查询的不是当前月的考勤记录，则不用更新数据
@@ -112,28 +114,28 @@ public class WaServiceImpl implements IWaService {
         try {
             log.info("==============================普通保存==============================");
             saveWaRecordList(user, queryStartDate, queryEndDate);
-            log.info("===================================================================");
-            if(threadSaveFlag){
-                new Thread(() -> {
-                    try {
-                        log.info("==============================线程保存==============================");
-                        saveWaRecordList(user, update.getLastUpdateDate(), DateUtils.addDays(queryStartDate, -1));
-                        log.info("===================================================================");
-                        update.setLastUpdateDate(WaUtil.getCurrentDay());
-                        update.setUpdateState("1");
-                        redisDao.saveWaUpdate(update);
-                    } catch (IOException e) {
-                        log.error("线程保存考勤记录失败！", e);
-                    }
-                }).start();
-            }
-        }finally {
             update.setLastUpdateDate(WaUtil.getCurrentDay());
+            log.info("===================================================================");
+        }finally {
             update.setUpdateState("1");
             redisDao.saveWaUpdate(update);
         }
 
-
+        if(threadSaveFlag){
+            final Date finalThreadQueryStartDate = threadQueryStartDate;
+            new Thread(() -> {
+                try {
+                    log.info("==============================线程保存==============================");
+                    saveWaRecordList(user, finalThreadQueryStartDate, DateUtils.addDays(queryStartDate, -1));
+                    log.info("===================================================================");
+                } catch (IOException e) {
+                    log.error("线程保存考勤记录失败！", e);
+                }finally {
+                    update.setUpdateState("1");
+                    redisDao.saveWaUpdate(update);
+                }
+            }).start();
+        }
     }
 
     private void saveWaRecordList(WaUser user, Date queryStartDate, Date queryEndDate) throws IOException {
