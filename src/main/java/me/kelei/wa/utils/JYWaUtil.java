@@ -56,9 +56,10 @@ public class JYWaUtil {
      */
     public static WaUser getJYWaUser(String pid, String password){
         WaUser waUser = null;
-        CloseableHttpClient client = jyWaLogin(pid, password);
+        CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
         try{
+            client = jyWaLogin(pid, password);
             HttpGet get = new HttpGet("http://124.42.1.13:8000/iclock/staff/");
             response = client.execute(get);
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
@@ -113,7 +114,12 @@ public class JYWaUtil {
      */
     public static List<WaRecord> getJYWaRecordList(WaUser waUser, Date startDate, Date endDate) throws IOException {
         List<WaRecord> recordList = new ArrayList<>();
-        jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd()).close();
+        try {
+            jyWaLogin(waUser.getWaPid(), waUser.getWaUserPwd()).close();
+        }catch (IOException e){
+            logger.error("登录网站失败！", e);
+            throw new IOException(e);
+        }
         List<Cookie> cookies =httpCookieStore.getCookies();
         String cookieName = "";
         String cookieValue = "";
@@ -133,8 +139,8 @@ public class JYWaUtil {
                     }
                     pageCount = getRecordByPage(waUser, cookieName, cookieValue, pageNum, startDate, endDate, recordList);
                     retry = false;
-                    retryCount++;
                 } catch (Exception e) {
+                    retryCount++;
                     retry = true;
                 }
             }
@@ -197,27 +203,23 @@ public class JYWaUtil {
      * @param password   用户密码
      * @return httpclient
      */
-    private static CloseableHttpClient jyWaLogin(String pid, String password){
+    private static CloseableHttpClient jyWaLogin(String pid, String password) throws IOException {
         String url = "http://124.42.1.13:8000/iclock/accounts/login/";
         CloseableHttpClient client = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore).build();
-        try {
-            HttpPost login = new HttpPost(url);
-            login.addHeader("X-Requested-With", "XMLHttpRequest");
-            List<NameValuePair> nvps = new ArrayList<>();
-            nvps.add(new BasicNameValuePair("username", pid));
-            nvps.add(new BasicNameValuePair("password", password));
-            login.setEntity(new UrlEncodedFormEntity(nvps, HTTP.DEF_CONTENT_CHARSET));
+        HttpPost login = new HttpPost(url);
+        login.addHeader("X-Requested-With", "XMLHttpRequest");
+        List<NameValuePair> nvps = new ArrayList<>();
+        nvps.add(new BasicNameValuePair("username", pid));
+        nvps.add(new BasicNameValuePair("password", password));
+        login.setEntity(new UrlEncodedFormEntity(nvps, HTTP.DEF_CONTENT_CHARSET));
 
-            HttpResponse response = client.execute(login);
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                HttpEntity entity = response.getEntity();
-                if (entity != null) {
-                    String responseText = EntityUtils.toString(entity);
-                    logger.info("登录状态：" + responseText);
-                }
+        HttpResponse response = client.execute(login);
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                String responseText = EntityUtils.toString(entity);
+                logger.info("登录状态：" + responseText);
             }
-        }catch (Exception e){
-            logger.error("登录精友考勤网站失败！", e);
         }
         return client;
     }

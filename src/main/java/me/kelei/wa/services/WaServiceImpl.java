@@ -109,27 +109,30 @@ public class WaServiceImpl implements IWaService {
         update.setUpdateState("0");
         redisDao.saveWaUpdate(update);
 
-        log.info("==============================普通保存==============================");
-        saveWaRecordList(user, queryStartDate, queryEndDate);
-        log.info("===================================================================");
-        if(threadSaveFlag){
-            new Thread(() -> {
-                try {
-                    log.info("==============================线程保存==============================");
-                    saveWaRecordList(user, update.getLastUpdateDate(), DateUtils.addDays(queryStartDate, -1));
-                    log.info("===================================================================");
-                    update.setLastUpdateDate(WaUtil.getCurrentDay());
-                    update.setUpdateState("1");
-                    redisDao.saveWaUpdate(update);
-                } catch (IOException e) {
-                    log.error("线程保存考勤记录失败！", e);
-                }
-            }).start();
-        }else{
+        try {
+            log.info("==============================普通保存==============================");
+            saveWaRecordList(user, queryStartDate, queryEndDate);
+            log.info("===================================================================");
+            if(threadSaveFlag){
+                new Thread(() -> {
+                    try {
+                        log.info("==============================线程保存==============================");
+                        saveWaRecordList(user, update.getLastUpdateDate(), DateUtils.addDays(queryStartDate, -1));
+                        log.info("===================================================================");
+                        update.setLastUpdateDate(WaUtil.getCurrentDay());
+                        update.setUpdateState("1");
+                        redisDao.saveWaUpdate(update);
+                    } catch (IOException e) {
+                        log.error("线程保存考勤记录失败！", e);
+                    }
+                }).start();
+            }
+        }finally {
             update.setLastUpdateDate(WaUtil.getCurrentDay());
             update.setUpdateState("1");
             redisDao.saveWaUpdate(update);
         }
+
 
     }
 
