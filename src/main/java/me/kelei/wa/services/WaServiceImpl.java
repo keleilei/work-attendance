@@ -116,9 +116,10 @@ public class WaServiceImpl implements IWaService {
             saveWaRecordList(user, queryStartDate, queryEndDate);
             update.setLastUpdateDate(WaUtil.getCurrentDay());
             log.info("===================================================================");
-        }finally {
+        }catch(IOException e) {
             update.setUpdateState("1");
             redisDao.saveWaUpdate(update);
+            throw new IOException("更新考勤数据出错！", e);
         }
 
         if(threadSaveFlag){
@@ -135,6 +136,9 @@ public class WaServiceImpl implements IWaService {
                     redisDao.saveWaUpdate(update);
                 }
             }).start();
+        }else{
+            update.setUpdateState("1");
+            redisDao.saveWaUpdate(update);
         }
     }
 
