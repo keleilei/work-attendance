@@ -34,6 +34,10 @@ function initTip(){
     $(".wa-user-area .share.icon").popup().click(function(){
         window.open("http://124.42.1.13:8000/iclock/accounts/login/");
     });
+
+    $(".orange.icon").popup();
+
+    $('#record-table').tablesort();
 }
 
 var isComplete = false;
@@ -129,7 +133,15 @@ function fillAanalysis(){
     $tbody.find("tr:visible").each(function(){
         var state = $(this).find("input[name='wastate']").val();
         switch(state){
-            case "2": lateCount++;break;
+            case "2":
+                var dateStr = $(this).find("td:first").text();
+                dateStr = dateStr.replace(/-/g,"/");
+                var date = new Date(dateStr);
+                var hourPlusMin = date.getHours() + date.getMinutes();
+                if(hourPlusMin < 40){
+                    lateCount++;
+                }
+                break;
             case "3": earlyCount++;break;
             case "4": absenteeismCount++;break;
             case "5": overtimeCount++;break;

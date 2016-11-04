@@ -156,7 +156,12 @@ public class WaUtil {
      * @return
      */
     public static boolean isLate(Date date) throws ParseException {
-        String standardDate = DateFormatUtils.format(date, "yyyy-MM-dd") + " 09:06:00";
+        Date newRole = DateUtils.parseDate("2016-11-03 23:59:59", "yyyy-MM-dd HH:mm:ss");//新规定，9点之后算迟到
+        String time = " 09:06:00";
+        if(newRole.getTime() < date.getTime()){
+            time = " 09:01:00";
+        }
+        String standardDate = DateFormatUtils.format(date, "yyyy-MM-dd") + time;
         return date.getTime() > DateUtils.parseDate(standardDate, "yyyy-MM-dd HH:mm:ss").getTime();
     }
 
